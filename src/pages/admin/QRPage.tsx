@@ -1,29 +1,41 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { QRCodeCanvas, QRCodeSVG } from 'qrcode.react';
 import { Download, Copy, ExternalLink } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useAppStore } from '../../store/useAppStore';
+import { formatAMD } from '../../utils/format';
 
 export function QRPage() {
   const business = useAppStore((s) => s.business);
+  const services = useAppStore((s) => s.services);
   const showToast = useAppStore((s) => s.showToast);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const link = `${window.location.origin}/book/${business.slug}`;
 
-  // Simple SVG QR-like pattern for demo (not a real QR encoder)
-  const cells = Array.from({ length: 21 * 21 }, (_, i) => {
-    const x = i % 21;
-    const y = Math.floor(i / 21);
-    const finder =
-      (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
-    const data = ((x * 7 + y * 3 + business.name.length) % 5) > 1;
-    return finder || data;
-  });
+  const downloadQr = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) {
+      showToast('QR-ը պատրաստ չէ');
+      return;
+    }
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${business.slug}-booking-qr.png`;
+    a.click();
+    showToast('QR-ը ներբեռնված է');
+  };
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
           <h1 className="page-title">Ձեր QR Booking</h1>
-          <p className="page-subtitle">Տեղադրեք այս QR կոդը ձեր սրահում, Instagram-ում կամ այցեքարտի վրա։</p>
+          <p className="page-subtitle">
+            Տեղադրեք այս QR կոդը ձեր սրահում, Instagram-ում կամ այցեքարտի վրա։ Սքանը կբացի՝{' '}
+            <strong>/book/{business.slug}</strong>
+          </p>
         </div>
       </div>
 
@@ -31,31 +43,38 @@ export function QRPage() {
         <div className="card card-pad" style={{ textAlign: 'center' }}>
           <div
             style={{
-              width: 220,
-              height: 220,
+              width: 236,
               margin: '0 auto 20px',
               padding: 16,
               background: '#fff',
               border: '1px solid var(--border)',
               borderRadius: 16,
-              display: 'grid',
-              gridTemplateColumns: 'repeat(21, 1fr)',
-              gap: 1,
+              display: 'inline-flex',
+              justifyContent: 'center',
             }}
-            aria-label="QR Code"
           >
-            {cells.map((on, i) => (
-              <div key={i} style={{ background: on ? '#0f172a' : '#fff', borderRadius: 0.5 }} />
-            ))}
+            <QRCodeSVG value={link} size={200} level="M" includeMargin bgColor="#ffffff" fgColor="#0f172a" />
+            {/* Hidden canvas for PNG download */}
+            <div style={{ position: 'absolute', left: -9999, top: 0 }} aria-hidden>
+              <QRCodeCanvas
+                value={link}
+                size={512}
+                level="M"
+                includeMargin
+                bgColor="#ffffff"
+                fgColor="#0f172a"
+                ref={canvasRef}
+              />
+            </div>
           </div>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.9rem' }}>
-            Սքանավորելով հաճախորդը կբացի ամրագրման էջը
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 8, fontSize: '0.9rem' }}>
+            Հաճախորդը սքանավորում է → բացվում է <strong>{business.name}</strong> ամրագրման էջը
+          </p>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: '0.8rem' }}>
+            Փորձիր հեռախոսի տեսախցիկով այս էկրանից
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Button
-              variant="secondary"
-              onClick={() => showToast('QR-ը ներբեռնված է (դեմո)')}
-            >
+            <Button variant="secondary" onClick={downloadQr}>
               <Download size={16} /> Ներբեռնել QR
             </Button>
             <Button
@@ -109,9 +128,9 @@ export function QRPage() {
             <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: '6px 0 14px' }}>
               ⭐ {business.rating} · {business.city}
             </div>
-            {['Մազերի կտրվածք — 8,000 ֏', 'Մատնահարդարում — 7,000 ֏', 'Մազերի ներկում — 18,000 ֏'].map((s) => (
+            {(services.length ? services.slice(0, 3) : []).map((s) => (
               <div
-                key={s}
+                key={s.id}
                 style={{
                   padding: '10px 12px',
                   border: '1px solid var(--border)',
@@ -119,14 +138,19 @@ export function QRPage() {
                   marginBottom: 8,
                   fontSize: '0.875rem',
                   background: '#fff',
+                  display: 'flex',
+                  justifyContent: 'space-between',
                 }}
               >
-                {s}
+                <span>{s.nameHy}</span>
+                <strong>{formatAMD(s.price)}</strong>
               </div>
             ))}
-            <Button block size="sm" style={{ marginTop: 8 }}>
-              Ամրագրել
-            </Button>
+            <Link to={`/book/${business.slug}`}>
+              <Button block size="sm" style={{ marginTop: 8 }}>
+                Ամրագրել
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
