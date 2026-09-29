@@ -38,10 +38,12 @@ interface AppState {
   onboarding: OnboardingState;
   bookingDraft: BookingDraft;
   bookingCompleteId: string | null;
+  bookingNotFound: boolean;
 
   login: (email: string, password: string) => boolean;
   logout: () => void;
   hydrate: () => Promise<void>;
+  hydrateBySlug: (slug: string) => Promise<boolean>;
   refreshAppointments: (date?: string) => Promise<void>;
 
   setSidebarOpen: (open: boolean) => void;
@@ -70,7 +72,8 @@ interface AppState {
   updateNotification: (id: string, patch: Partial<NotificationSetting>) => void;
 
   setOnboarding: (patch: Partial<OnboardingState>) => void;
-  completeOnboarding: () => void;
+  /** Creates a brand-new salon from onboarding (not Beauty House). */
+  finishOnboarding: () => Promise<Business>;
 
   setBookingDraft: (patch: Partial<BookingDraft>) => void;
   resetBookingDraft: () => void;
@@ -114,6 +117,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   onboarding: emptyOnboarding,
   bookingDraft: emptyBooking,
   bookingCompleteId: null,
+  bookingNotFound: false,
 
   login: (email) => {
     if (!email) return false;
@@ -124,14 +128,39 @@ export const useAppStore = create<AppState>((set, get) => ({
   logout: () => set({ isAuthenticated: false }),
 
   hydrate: async () => {
-    const biz = get().business;
+    const activeId = api.getActiveBusinessId();
+    const biz = (await api.getBusiness(activeId)) || demoBusiness;
+    api.setActiveBusinessId(biz.id);
     const [employees, services, customers, appointments] = await Promise.all([
       api.getEmployees(biz.id),
       api.getServices(biz.id),
       api.getCustomers(biz.id),
       api.getAppointments(biz.id),
     ]);
-    set({ employees, services, customers, appointments });
+    set({ business: biz, employees, services, customers, appointments, bookingNotFound: false });
+  },
+
+  hydrateBySlug: async (slug) => {
+    const biz = await api.getBusiness(slug);
+    if (!biz) {
+      set({ bookingNotFound: true });
+      return false;
+    }
+    const [employees, services, customers, appointments] = await Promise.all([
+      api.getEmployees(biz.id),
+      api.getServices(biz.id),
+      api.getCustomers(biz.id),
+      api.getAppointments(biz.id),
+    ]);
+    set({
+      business: biz,
+      employees,
+      services,
+      customers,
+      appointments,
+      bookingNotFound: false,
+    });
+    return true;
   },
 
   refreshAppointments: async (date) => {
@@ -223,7 +252,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       businessId: get().business.id,
       employeeIds: get().employees.map((e) => e.id),
     });
-    set({ services: [...get().services, svc] });
+    const employees = await api.getEmployees(get().business.id);
+    set({ services: [...get().services, svc], employees });
     get().showToast('Ծառայությունը ավելացված է');
   },
 
@@ -276,15 +306,32 @@ export const useAppStore = create<AppState>((set, get) => ({
   setOnboarding: (patch) =>
     set({ onboarding: { ...get().onboarding, ...patch } }),
 
-  completeOnboarding: () => {
+  finishOnboarding: async () => {
     const ob = get().onboarding;
-    const biz = {
-      ...get().business,
-      name: ob.businessName || get().business.name,
-      type: (ob.businessType || get().business.type) as BusinessType,
+    const name = ob.businessName.trim() || 'Նոր սրահ';
+    const { business, employees, services } = await api.createBusiness({
+      name,
+      type: (ob.businessType || 'beauty_salon') as BusinessType,
       workingHours: ob.workingHours,
-    };
-    set({ business: biz, isAuthenticated: true });
+      employees: ob.employees.length
+        ? ob.employees
+        : [{ name: 'Մասնագետ 1', role: 'Մասնագետ' }],
+      services: ob.services.length
+        ? ob.services
+        : [{ name: 'Ծառայություն', price: 8000, duration: 45 }],
+    });
+
+    set({
+      business,
+      employees,
+      services,
+      customers: [],
+      appointments: [],
+      isAuthenticated: true,
+      onboarding: { ...emptyOnboarding, step: 7 },
+    });
+    get().showToast(`${business.name} սրահը ստեղծված է`);
+    return business;
   },
 
   setBookingDraft: (patch) =>

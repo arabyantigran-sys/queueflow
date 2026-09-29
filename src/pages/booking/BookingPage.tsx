@@ -12,7 +12,7 @@ type Step = 'services' | 'specialist' | 'datetime' | 'info' | 'done';
 export function BookingPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const hydrate = useAppStore((s) => s.hydrate);
+  const hydrateBySlug = useAppStore((s) => s.hydrateBySlug);
   const business = useAppStore((s) => s.business);
   const services = useAppStore((s) => s.services);
   const employees = useAppStore((s) => s.employees);
@@ -21,18 +21,28 @@ export function BookingPage() {
   const resetDraft = useAppStore((s) => s.resetBookingDraft);
   const submitBooking = useAppStore((s) => s.submitBooking);
   const bookingCompleteId = useAppStore((s) => s.bookingCompleteId);
+  const bookingNotFound = useAppStore((s) => s.bookingNotFound);
   const appointments = useAppStore((s) => s.appointments);
   const cancelAppointment = useAppStore((s) => s.cancelAppointment);
   const showToast = useAppStore((s) => s.showToast);
 
   const [step, setStep] = useState<Step>('services');
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    void hydrate();
-    resetDraft();
-    setStep('services');
-  }, [hydrate, resetDraft, slug]);
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      resetDraft();
+      setStep('services');
+      if (slug) await hydrateBySlug(slug);
+      if (!cancelled) setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrateBySlug, resetDraft, slug]);
 
   const selectedService = services.find((s) => s.id === draft.serviceId);
   const selectedEmployee =
@@ -42,7 +52,9 @@ export function BookingPage() {
 
   const availableEmployees = useMemo(() => {
     if (!draft.serviceId) return employees;
-    return employees.filter((e) => e.services.includes(draft.serviceId!));
+    return employees.filter(
+      (e) => e.services.length === 0 || e.services.includes(draft.serviceId!)
+    );
   }, [employees, draft.serviceId]);
 
   const dates = [TODAY, '2026-09-29', '2026-09-30', '2026-10-01'];
@@ -60,6 +72,35 @@ export function BookingPage() {
       setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
+        Բեռնվում է...
+      </div>
+    );
+  }
+
+  if (bookingNotFound || (slug && business.slug !== slug)) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
+        <div className="card" style={{ padding: 28, maxWidth: 420, textAlign: 'center' }}>
+          <h1 style={{ fontSize: '1.25rem', marginBottom: 8 }}>Սրահը չի գտնվել</h1>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.95rem' }}>
+            <code>/book/{slug}</code> էջը այս սարքում չկա։
+            <br />
+            Prototype-ում նոր սրահը պահվում է միայն այն բրաուզերում, որտեղ ստեղծել եք։
+            <br />
+            Դեմո սրահը՝ Beauty House։
+          </p>
+          <Link to="/book/beauty-house">
+            <Button block>Բացել Beauty House դեմոն</Button>
+          </Link>
+        </div>
+        <Toast />
+      </div>
+    );
+  }
 
   return (
     <div

@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { useAppStore } from '../../store/useAppStore';
+import { slugify } from '../../data/api';
 import type { BusinessType } from '../../types';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Copy, ExternalLink } from 'lucide-react';
 
 const types: { id: BusinessType; label: string }[] = [
   { id: 'beauty_salon', label: 'Գեղեցկության սրահ' },
@@ -29,40 +30,45 @@ export function OnboardingPage() {
   const navigate = useNavigate();
   const onboarding = useAppStore((s) => s.onboarding);
   const setOnboarding = useAppStore((s) => s.setOnboarding);
-  const completeOnboarding = useAppStore((s) => s.completeOnboarding);
-  const addEmployee = useAppStore((s) => s.addEmployee);
-  const addService = useAppStore((s) => s.addService);
-  const updateBusiness = useAppStore((s) => s.updateBusiness);
+  const finishOnboarding = useAppStore((s) => s.finishOnboarding);
+  const business = useAppStore((s) => s.business);
+  const showToast = useAppStore((s) => s.showToast);
 
   const [empName, setEmpName] = useState('');
   const [empRole, setEmpRole] = useState('');
   const [svcName, setSvcName] = useState('');
   const [svcPrice, setSvcPrice] = useState('8000');
   const [svcDuration, setSvcDuration] = useState('45');
+  const [saving, setSaving] = useState(false);
 
   const step = onboarding.step;
   const total = 6;
+
+  const previewSlug = useMemo(
+    () => slugify(onboarding.businessName || 'nor-sarah'),
+    [onboarding.businessName]
+  );
+
+  const bookingUrl =
+    typeof window !== 'undefined'
+      ? `${window.location.origin}/book/${business.slug}`
+      : `/book/${business.slug}`;
 
   const next = () => setOnboarding({ step: Math.min(step + 1, 7) });
   const back = () => setOnboarding({ step: Math.max(step - 1, 1) });
 
   const finish = async () => {
-    completeOnboarding();
-    if (onboarding.businessName) {
-      await updateBusiness({ name: onboarding.businessName, type: onboarding.businessType || 'beauty_salon' });
+    if (!onboarding.businessName.trim()) {
+      showToast('Լրացրեք բիզնեսի անունը');
+      setOnboarding({ step: 1 });
+      return;
     }
-    for (const e of onboarding.employees) {
-      await addEmployee({ name: e.name, role: e.role, phone: '091 000 000', workingHours: '09:00 – 18:00' });
+    setSaving(true);
+    try {
+      await finishOnboarding();
+    } finally {
+      setSaving(false);
     }
-    for (const s of onboarding.services) {
-      await addService({
-        nameHy: s.name,
-        name: s.name,
-        price: s.price,
-        duration: s.duration,
-      });
-    }
-    setOnboarding({ step: 7 });
   };
 
   return (
@@ -105,7 +111,7 @@ export function OnboardingPage() {
               className="form-input"
               value={onboarding.businessName}
               onChange={(e) => setOnboarding({ businessName: e.target.value })}
-              placeholder="Beauty House"
+              placeholder="Օր. Glow Studio"
             />
           </>
         )}
@@ -133,7 +139,7 @@ export function OnboardingPage() {
         {step === 3 && (
           <>
             <h1 style={{ fontSize: '1.4rem', marginBottom: 8 }}>Ավելացրեք աշխատակիցներ</h1>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>Կարող եք ավելացնել ավելի ուշ</p>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 16 }}>Գոնե մեկը խորհուրդ է տրվում</p>
             <div className="grid-2">
               <input className="form-input" placeholder="Անուն" value={empName} onChange={(e) => setEmpName(e.target.value)} />
               <input className="form-input" placeholder="Դեր" value={empRole} onChange={(e) => setEmpRole(e.target.value)} />
@@ -248,34 +254,64 @@ export function OnboardingPage() {
           <>
             <h1 style={{ fontSize: '1.4rem', marginBottom: 8 }}>Ամրագրման էջ</h1>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>
-              Ձեր հաճախորդները կարող են ամրագրել այս հղումով
+              Ավարտից հետո կստեղծվի նոր սրահ՝ այս հղումով (ոչ Beauty House)
             </p>
             <div
               className="card card-pad"
               style={{ background: 'var(--primary-soft)', borderColor: 'transparent', marginBottom: 16 }}
             >
-              <div style={{ fontWeight: 700, marginBottom: 6 }}>{onboarding.businessName || 'Beauty House'}</div>
-              <code style={{ fontSize: '0.9rem' }}>
-                queueflow.am/book/
-                {(onboarding.businessName || 'beauty-house').toLowerCase().replace(/\s+/g, '-')}
+              <div style={{ fontWeight: 700, marginBottom: 6 }}>{onboarding.businessName || 'Նոր սրահ'}</div>
+              <code style={{ fontSize: '0.9rem', wordBreak: 'break-all' }}>
+                {typeof window !== 'undefined' ? window.location.origin : ''}/book/{previewSlug}
               </code>
             </div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
-              QR կոդը կստեղծվի ավտոմատ Dashboard-ում։
-            </p>
           </>
         )}
 
         {step === 7 && (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle2 size={56} color="var(--success)" style={{ marginBottom: 16 }} />
-            <h1 style={{ fontSize: '1.6rem', marginBottom: 8 }}>Ձեր բիզնեսը պատրաստ է</h1>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: 28 }}>
-              Սկսեք կառավարել հերթերն ու ամրագրումները
+            <h1 style={{ fontSize: '1.6rem', marginBottom: 8 }}>{business.name} պատրաստ է</h1>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 12 }}>
+              Հաճախորդների ամրագրման էջը
             </p>
-            <Button size="lg" onClick={() => navigate('/admin')}>
-              Բացել Dashboard
-            </Button>
+            <code
+              style={{
+                display: 'block',
+                padding: 12,
+                background: 'var(--surface-2)',
+                borderRadius: 10,
+                fontSize: '0.85rem',
+                wordBreak: 'break-all',
+                marginBottom: 16,
+              }}
+            >
+              {bookingUrl}
+            </code>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <Button
+                variant="secondary"
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(bookingUrl);
+                  } catch {
+                    /* ignore */
+                  }
+                  showToast('Հղումը պատճենված է');
+                }}
+              >
+                <Copy size={16} /> Պատճենել booking լինկը
+              </Button>
+              <Button variant="secondary" onClick={() => navigate(`/book/${business.slug}`)}>
+                <ExternalLink size={16} /> Բացել ամրագրման էջը
+              </Button>
+              <Button size="lg" onClick={() => navigate('/admin')}>
+                Բացել Dashboard
+              </Button>
+              <Link to="/admin/qr" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 600 }}>
+                QR Booking →
+              </Link>
+            </div>
           </div>
         )}
 
@@ -285,9 +321,13 @@ export function OnboardingPage() {
               Հետ
             </Button>
             {step < 6 ? (
-              <Button onClick={next}>Հաջորդ</Button>
+              <Button onClick={next} disabled={step === 1 && !onboarding.businessName.trim()}>
+                Հաջորդ
+              </Button>
             ) : (
-              <Button onClick={() => void finish()}>Ավարտել</Button>
+              <Button onClick={() => void finish()} disabled={saving}>
+                {saving ? 'Ստեղծում...' : 'Ստեղծել սրահը'}
+              </Button>
             )}
           </div>
         )}
