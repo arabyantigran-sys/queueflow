@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useAppStore } from '../../store/useAppStore';
+import { useI18n } from '../../i18n/useI18n';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const login = useAppStore((s) => s.login);
+  const { t } = useI18n();
   const [email, setEmail] = useState('admin@beautyhouse.am');
   const [password, setPassword] = useState('demo1234');
 
@@ -26,43 +29,38 @@ export function LoginPage() {
       }}
     >
       <div className="card" style={{ width: '100%', maxWidth: 420, padding: 32 }}>
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 12,
-              background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-              color: '#fff',
-              display: 'grid',
-              placeItems: 'center',
-              fontFamily: 'var(--font-brand)',
-              fontWeight: 800,
-            }}
-          >
-            Q
-          </div>
-          <span className="brand" style={{ fontSize: '1.35rem' }}>
-            QueueFlow
-          </span>
-        </Link>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: 6 }}>Մուտք գործել</h1>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: 24, fontSize: '0.95rem' }}>
-          Մուտք գործեք ձեր բիզնեսի վահանակ
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
+                color: '#fff',
+                display: 'grid',
+                placeItems: 'center',
+                fontFamily: 'var(--font-brand)',
+                fontWeight: 800,
+              }}
+            >
+              Q
+            </div>
+            <span className="brand" style={{ fontSize: '1.35rem' }}>
+              QueueFlow
+            </span>
+          </Link>
+          <LanguageSwitcher compact />
+        </div>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: 6 }}>{t('auth.loginTitle')}</h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 24, fontSize: '0.95rem' }}>{t('auth.loginSub')}</p>
         <form onSubmit={onSubmit}>
           <div className="form-group">
-            <label className="form-label">Email</label>
-            <input
-              className="form-input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <label className="form-label">{t('auth.email')}</label>
+            <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label className="form-label">Գաղտնաբառ</label>
+            <label className="form-label">{t('auth.password')}</label>
             <input
               className="form-input"
               type="password"
@@ -73,15 +71,18 @@ export function LoginPage() {
           </div>
           <div style={{ textAlign: 'right', marginBottom: 20 }}>
             <button type="button" className="btn btn-ghost btn-sm" style={{ color: 'var(--primary)' }}>
-              Մոռացե՞լ եք գաղտնաբառը
+              {t('auth.forgot')}
             </button>
           </div>
           <Button type="submit" block size="lg">
-            Մուտք գործել
+            {t('auth.loginBtn')}
           </Button>
         </form>
         <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Դեռ հաշիվ չունե՞ք · <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 650 }}>Գրանցվել</Link>
+          {t('auth.noAccount')} ·{' '}
+          <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 650 }}>
+            {t('auth.registerLink')}
+          </Link>
         </p>
       </div>
     </div>

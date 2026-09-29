@@ -1,11 +1,14 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
 import { useAppStore } from '../../store/useAppStore';
+import { useI18n } from '../../i18n/useI18n';
 
 export function RegisterPage() {
   const navigate = useNavigate();
   const setOnboarding = useAppStore((s) => s.setOnboarding);
+  const { t } = useI18n();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -28,34 +31,31 @@ export function RegisterPage() {
       }}
     >
       <div className="card" style={{ width: '100%', maxWidth: 440, padding: 32 }}>
-        <Link to="/" className="brand" style={{ fontSize: '1.25rem', display: 'inline-block', marginBottom: 24 }}>
-          QueueFlow
-        </Link>
-        <h1 style={{ fontSize: '1.5rem', marginBottom: 6 }}>Ստեղծել բիզնես հաշիվ</h1>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>30 օր անվճար փորձաշրջան</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <Link to="/" className="brand" style={{ fontSize: '1.25rem' }}>
+            QueueFlow
+          </Link>
+          <LanguageSwitcher compact />
+        </div>
+        <h1 style={{ fontSize: '1.5rem', marginBottom: 6 }}>{t('auth.registerTitle')}</h1>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: 24 }}>{t('auth.registerSub')}</p>
         <form onSubmit={onSubmit}>
           <div className="form-group">
-            <label className="form-label">Բիզնեսի անուն</label>
+            <label className="form-label">{t('auth.businessName')}</label>
             <input
               className="form-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Օր. Beauty House"
+              placeholder="Beauty House"
               required
             />
           </div>
           <div className="form-group">
-            <label className="form-label">Email</label>
-            <input
-              className="form-input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <label className="form-label">{t('auth.email')}</label>
+            <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
           </div>
           <div className="form-group">
-            <label className="form-label">Գաղտնաբառ</label>
+            <label className="form-label">{t('auth.password')}</label>
             <input
               className="form-input"
               type="password"
@@ -66,11 +66,14 @@ export function RegisterPage() {
             />
           </div>
           <Button type="submit" block size="lg">
-            Շարունակել
+            {t('auth.continue')}
           </Button>
         </form>
         <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-          Արդեն ունե՞ք հաշիվ · <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 650 }}>Մուտք</Link>
+          {t('auth.hasAccount')} ·{' '}
+          <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 650 }}>
+            {t('common.login')}
+          </Link>
         </p>
       </div>
     </div>

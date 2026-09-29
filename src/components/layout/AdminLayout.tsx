@@ -20,25 +20,28 @@ import {
 import { useAppStore } from '../../store/useAppStore';
 import { AppointmentModal } from '../shared/AppointmentModal';
 import { Toast } from '../ui/Toast';
+import { LanguageSwitcher } from '../LanguageSwitcher';
+import { useI18n } from '../../i18n/useI18n';
 import '../../styles/admin.css';
 
-const nav = [
-  { to: '/admin', end: true, label: 'Գլխավոր', icon: LayoutDashboard },
-  { to: '/admin/calendar', label: 'Օրացույց', icon: Calendar },
-  { to: '/admin/queue', label: 'Հերթ', icon: ListOrdered },
-  { to: '/admin/appointments', label: 'Ամրագրումներ', icon: CalendarCheck },
-  { to: '/admin/customers', label: 'Հաճախորդներ', icon: Users },
-  { to: '/admin/employees', label: 'Աշխատակիցներ', icon: UserCog },
-  { to: '/admin/services', label: 'Ծառայություններ', icon: Scissors },
-  { to: '/admin/analytics', label: 'Վիճակագրություն', icon: BarChart3 },
-  { to: '/admin/notifications', label: 'Ծանուցումներ', icon: Bell },
-  { to: '/admin/qr', label: 'QR Booking', icon: QrCode },
-  { to: '/admin/billing', label: 'Բաժանորդագրություն', icon: CreditCard },
-  { to: '/admin/settings', label: 'Կարգավորումներ', icon: Settings },
-];
+const navDefs = [
+  { to: '/admin', end: true, labelKey: 'nav.home', icon: LayoutDashboard },
+  { to: '/admin/calendar', labelKey: 'nav.calendar', icon: Calendar },
+  { to: '/admin/queue', labelKey: 'nav.queue', icon: ListOrdered },
+  { to: '/admin/appointments', labelKey: 'nav.appointments', icon: CalendarCheck },
+  { to: '/admin/customers', labelKey: 'nav.customers', icon: Users },
+  { to: '/admin/employees', labelKey: 'nav.employees', icon: UserCog },
+  { to: '/admin/services', labelKey: 'nav.services', icon: Scissors },
+  { to: '/admin/analytics', labelKey: 'nav.analytics', icon: BarChart3 },
+  { to: '/admin/notifications', labelKey: 'nav.notifications', icon: Bell },
+  { to: '/admin/qr', labelKey: 'nav.qr', icon: QrCode },
+  { to: '/admin/billing', labelKey: 'nav.billing', icon: CreditCard },
+  { to: '/admin/settings', labelKey: 'nav.settings', icon: Settings },
+] as const;
 
 export function AdminLayout() {
   const navigate = useNavigate();
+  const { t } = useI18n();
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const business = useAppStore((s) => s.business);
   const sidebarOpen = useAppStore((s) => s.sidebarOpen);
@@ -70,21 +73,21 @@ export function AdminLayout() {
           </div>
         </div>
         <nav className="sidebar-nav">
-          <div className="nav-section">Գործառույթներ</div>
-          {nav.slice(0, 7).map((item) => (
+          <div className="nav-section">{t('nav.sectionOps')}</div>
+          {navDefs.slice(0, 7).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.end}
+              end={'end' in item ? item.end : false}
               className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
               onClick={() => setSidebarOpen(false)}
             >
               <item.icon size={18} />
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           ))}
-          <div className="nav-section">Համակարգ</div>
-          {nav.slice(7).map((item) => (
+          <div className="nav-section">{t('nav.sectionSystem')}</div>
+          {navDefs.slice(7).map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -92,7 +95,7 @@ export function AdminLayout() {
               onClick={() => setSidebarOpen(false)}
             >
               <item.icon size={18} />
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           ))}
         </nav>
@@ -106,7 +109,7 @@ export function AdminLayout() {
             }}
           >
             <LogOut size={18} />
-            Ելք
+            {t('common.logout')}
           </button>
         </div>
       </aside>
@@ -118,18 +121,12 @@ export function AdminLayout() {
               <Menu size={18} />
             </button>
             <div className="business-selector">
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: '50%',
-                  background: 'var(--success)',
-                }}
-              />
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)' }} />
               {business.name}
             </div>
           </div>
           <div className="topbar-actions">
+            <LanguageSwitcher compact />
             <button className="icon-btn" onClick={() => navigate('/admin/notifications')} aria-label="Notifications">
               <BellRing size={18} />
               <span className="notif-dot" />
@@ -137,7 +134,7 @@ export function AdminLayout() {
             <div className="user-chip">
               <div className="user-avatar">BH</div>
               <div style={{ fontSize: '0.85rem' }}>
-                <div style={{ fontWeight: 650 }}>Մենեջեր</div>
+                <div style={{ fontWeight: 650 }}>{t('nav.manager')}</div>
                 <div style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>admin@beautyhouse.am</div>
               </div>
             </div>

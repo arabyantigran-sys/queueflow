@@ -6,11 +6,14 @@ import { useAppStore } from '../../store/useAppStore';
 import { TODAY, timeSlots } from '../../data/demoData';
 import { formatAMD } from '../../utils/format';
 import { Toast } from '../../components/ui/Toast';
+import { LanguageSwitcher } from '../../components/LanguageSwitcher';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'services' | 'specialist' | 'datetime' | 'info' | 'done';
 
 export function BookingPage() {
   const { slug } = useParams();
+  const { t } = useI18n();
   const hydrateBySlug = useAppStore((s) => s.hydrateBySlug);
   const business = useAppStore((s) => s.business);
   const services = useAppStore((s) => s.services);
@@ -45,19 +48,14 @@ export function BookingPage() {
 
   const selectedService = services.find((s) => s.id === draft.serviceId);
   const selectedEmployee =
-    draft.employeeId === 'any'
-      ? null
-      : employees.find((e) => e.id === draft.employeeId);
+    draft.employeeId === 'any' ? null : employees.find((e) => e.id === draft.employeeId);
 
   const availableEmployees = useMemo(() => {
     if (!draft.serviceId) return employees;
-    return employees.filter(
-      (e) => e.services.length === 0 || e.services.includes(draft.serviceId!)
-    );
+    return employees.filter((e) => e.services.length === 0 || e.services.includes(draft.serviceId!));
   }, [employees, draft.serviceId]);
 
   const dates = [TODAY, '2026-09-29', '2026-09-30', '2026-10-01'];
-
   const completed = appointments.find((a) => a.id === bookingCompleteId);
 
   const onSubmit = async () => {
@@ -66,7 +64,7 @@ export function BookingPage() {
       await submitBooking();
       setStep('done');
     } catch {
-      showToast('Լրացրեք բոլոր դաշտերը');
+      showToast(t('book.fillAll'));
     } finally {
       setSubmitting(false);
     }
@@ -74,9 +72,7 @@ export function BookingPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>
-        Բեռնվում է...
-      </div>
+      <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center' }}>{t('common.loading')}</div>
     );
   }
 
@@ -84,16 +80,13 @@ export function BookingPage() {
     return (
       <div style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 24 }}>
         <div className="card" style={{ padding: 28, maxWidth: 420, textAlign: 'center' }}>
-          <h1 style={{ fontSize: '1.25rem', marginBottom: 8 }}>Սրահը չի գտնվել</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.95rem' }}>
-            <code>/book/{slug}</code> էջը այս սարքում չկա։
-            <br />
-            Prototype-ում նոր սրահը պահվում է միայն այն բրաուզերում, որտեղ ստեղծել եք։
-            <br />
-            Դեմո սրահը՝ Beauty House։
-          </p>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
+            <LanguageSwitcher compact />
+          </div>
+          <h1 style={{ fontSize: '1.25rem', marginBottom: 8 }}>{t('book.notFoundTitle')}</h1>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: 16, fontSize: '0.95rem' }}>{t('book.notFoundBody')}</p>
           <Link to="/book/beauty-house">
-            <Button block>Բացել Beauty House դեմոն</Button>
+            <Button block>{t('book.openDemo')}</Button>
           </Link>
         </div>
         <Toast />
@@ -111,19 +104,22 @@ export function BookingPage() {
     >
       <div style={{ maxWidth: 440, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ամրագրում</div>
-          {step !== 'services' && step !== 'done' && (
-            <button
-              className="btn btn-ghost btn-sm"
-              onClick={() => {
-                const order: Step[] = ['services', 'specialist', 'datetime', 'info', 'done'];
-                const i = order.indexOf(step);
-                setStep(order[Math.max(0, i - 1)]);
-              }}
-            >
-              <ArrowLeft size={16} /> Հետ
-            </button>
-          )}
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('book.booking')}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <LanguageSwitcher compact />
+            {step !== 'services' && step !== 'done' && (
+              <button
+                className="btn btn-ghost btn-sm"
+                onClick={() => {
+                  const order: Step[] = ['services', 'specialist', 'datetime', 'info', 'done'];
+                  const i = order.indexOf(step);
+                  setStep(order[Math.max(0, i - 1)]);
+                }}
+              >
+                <ArrowLeft size={16} /> {t('common.back')}
+              </button>
+            )}
+          </div>
         </div>
 
         {step !== 'done' && (
@@ -149,16 +145,16 @@ export function BookingPage() {
                 fontWeight: 650,
               }}
             >
-              Բաց է մինչև {business.openUntil}
+              {t('book.openUntil')} {business.openUntil}
             </div>
           </div>
         )}
 
         {step === 'services' && (
           <div className="card" style={{ padding: 20 }}>
-            <h2 style={{ fontSize: '1.05rem', marginBottom: 14 }}>Ընտրեք ծառայություն</h2>
+            <h2 style={{ fontSize: '1.05rem', marginBottom: 14 }}>{t('book.selectService')}</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              {services.filter((s) => s.id !== 'svc-massage' || true).map((s) => (
+              {services.map((s) => (
                 <button
                   key={s.id}
                   type="button"
@@ -179,7 +175,9 @@ export function BookingPage() {
                     <span>{s.nameHy}</span>
                     <span>{formatAMD(s.price)}</span>
                   </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>{s.duration} րոպե</div>
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                    {s.duration} {t('book.min')}
+                  </div>
                 </button>
               ))}
             </div>
@@ -188,10 +186,8 @@ export function BookingPage() {
 
         {step === 'specialist' && (
           <div className="card" style={{ padding: 20 }}>
-            <h2 style={{ fontSize: '1.05rem', marginBottom: 6 }}>Ընտրեք մասնագետ</h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 14 }}>
-              {selectedService?.nameHy}
-            </p>
+            <h2 style={{ fontSize: '1.05rem', marginBottom: 6 }}>{t('book.selectSpecialist')}</h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: 14 }}>{selectedService?.nameHy}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 type="button"
@@ -202,7 +198,7 @@ export function BookingPage() {
                   setStep('datetime');
                 }}
               >
-                Ցանկացած մասնագետ
+                {t('common.anySpecialist')}
               </button>
               {availableEmployees.map((e) => (
                 <button
@@ -228,7 +224,7 @@ export function BookingPage() {
 
         {step === 'datetime' && (
           <div className="card" style={{ padding: 20 }}>
-            <h2 style={{ fontSize: '1.05rem', marginBottom: 14 }}>Ընտրեք ամսաթիվ և ժամ</h2>
+            <h2 style={{ fontSize: '1.05rem', marginBottom: 14 }}>{t('book.selectDateTime')}</h2>
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto', marginBottom: 20, paddingBottom: 4 }}>
               {dates.map((d) => (
                 <button
@@ -238,32 +234,30 @@ export function BookingPage() {
                   onClick={() => setDraft({ date: d })}
                   style={{ flexDirection: 'column', minWidth: 72 }}
                 >
-                  <span style={{ fontSize: '0.7rem' }}>{d === TODAY ? 'Այսօր' : d.slice(5)}</span>
+                  <span style={{ fontSize: '0.7rem' }}>{d === TODAY ? t('common.today') : d.slice(5)}</span>
                   <strong>{d.slice(8)}</strong>
                 </button>
               ))}
             </div>
             {draft.date && (
               <>
-                <div style={{ fontWeight: 650, marginBottom: 10, fontSize: '0.9rem' }}>Հասանելի ժամեր</div>
+                <div style={{ fontWeight: 650, marginBottom: 10, fontSize: '0.9rem' }}>{t('book.availableTimes')}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-                  {timeSlots.filter((t) => t >= '17:00' && t <= '19:00').map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      className={`chip ${draft.time === t ? 'active' : ''}`}
-                      onClick={() => setDraft({ time: t })}
-                    >
-                      {t}
-                    </button>
-                  ))}
+                  {timeSlots
+                    .filter((slot) => slot >= '17:00' && slot <= '19:00')
+                    .map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        className={`chip ${draft.time === slot ? 'active' : ''}`}
+                        onClick={() => setDraft({ time: slot })}
+                      >
+                        {slot}
+                      </button>
+                    ))}
                 </div>
-                <Button
-                  block
-                  disabled={!draft.time}
-                  onClick={() => setStep('info')}
-                >
-                  Շարունակել
+                <Button block disabled={!draft.time} onClick={() => setStep('info')}>
+                  {t('book.continue')}
                 </Button>
               </>
             )}
@@ -272,18 +266,18 @@ export function BookingPage() {
 
         {step === 'info' && (
           <div className="card" style={{ padding: 20 }}>
-            <h2 style={{ fontSize: '1.05rem', marginBottom: 14 }}>Ձեր տվյալները</h2>
+            <h2 style={{ fontSize: '1.05rem', marginBottom: 14 }}>{t('book.yourDetails')}</h2>
             <div className="form-group">
-              <label className="form-label">Անուն</label>
+              <label className="form-label">{t('book.name')}</label>
               <input
                 className="form-input"
                 value={draft.customerName}
                 onChange={(e) => setDraft({ customerName: e.target.value })}
-                placeholder="Անի"
+                placeholder="Ani"
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Հեռախոս</label>
+              <label className="form-label">{t('book.phone')}</label>
               <input
                 className="form-input"
                 value={draft.customerPhone}
@@ -292,12 +286,12 @@ export function BookingPage() {
               />
             </div>
             <div className="form-group">
-              <label className="form-label">Նշումներ (ոչ պարտադիր)</label>
+              <label className="form-label">{t('book.notes')}</label>
               <textarea
                 className="form-textarea"
                 value={draft.notes}
                 onChange={(e) => setDraft({ notes: e.target.value })}
-                placeholder="Հատուկ խնդրանքներ..."
+                placeholder="..."
               />
             </div>
             <div
@@ -310,14 +304,20 @@ export function BookingPage() {
               }}
             >
               <div>
-                <strong>{selectedService?.nameHy}</strong> · {selectedEmployee?.name ?? 'Ցանկացած'}
+                <strong>{selectedService?.nameHy}</strong> · {selectedEmployee?.name ?? t('common.anySpecialist')}
               </div>
               <div style={{ color: 'var(--text-secondary)', marginTop: 4 }}>
-                {draft.date === TODAY ? 'Այսօր' : draft.date} · {draft.time} · {formatAMD(selectedService?.price ?? 0)}
+                {draft.date === TODAY ? t('common.today') : draft.date} · {draft.time} ·{' '}
+                {formatAMD(selectedService?.price ?? 0)}
               </div>
             </div>
-            <Button block size="lg" disabled={!draft.customerName || !draft.customerPhone || submitting} onClick={() => void onSubmit()}>
-              {submitting ? 'Ամրագրում...' : 'Հաստատել ամրագրումը'}
+            <Button
+              block
+              size="lg"
+              disabled={!draft.customerName || !draft.customerPhone || submitting}
+              onClick={() => void onSubmit()}
+            >
+              {submitting ? t('book.confirming') : t('book.confirm')}
             </Button>
           </div>
         )}
@@ -325,7 +325,7 @@ export function BookingPage() {
         {step === 'done' && completed && (
           <div className="card" style={{ padding: 28, textAlign: 'center' }}>
             <CheckCircle2 size={52} color="var(--success)" style={{ margin: '0 auto 12px' }} />
-            <h1 style={{ fontSize: '1.35rem', marginBottom: 8 }}>Ամրագրումը հաստատված է</h1>
+            <h1 style={{ fontSize: '1.35rem', marginBottom: 8 }}>{t('book.confirmed')}</h1>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 20 }}>{business.name}</p>
             <div
               style={{
@@ -337,44 +337,35 @@ export function BookingPage() {
               }}
             >
               <div style={{ fontSize: '1.25rem', fontWeight: 750, marginBottom: 8 }}>
-                {completed.date === TODAY ? 'Այսօր' : completed.date} · {completed.startTime}
+                {completed.date === TODAY ? t('common.today') : completed.date} · {completed.startTime}
               </div>
               <div style={{ fontSize: '0.95rem' }}>
-                Ծառայություն: <strong>{completed.serviceName}</strong>
+                {t('book.service')}: <strong>{completed.serviceName}</strong>
               </div>
               <div style={{ fontSize: '0.95rem', marginTop: 4 }}>
-                Մասնագետ: <strong>{completed.employeeName}</strong>
+                {t('book.specialist')}: <strong>{completed.employeeName}</strong>
               </div>
             </div>
-            <Button
-              block
-              variant="secondary"
-              style={{ marginBottom: 10 }}
-              onClick={() => showToast('Ավելացված է օրացույցին (դեմո)')}
-            >
-              <CalendarPlus size={16} /> Ավելացնել օրացույցին
+            <Button block variant="secondary" style={{ marginBottom: 10 }} onClick={() => showToast(t('book.addToCalendar'))}>
+              <CalendarPlus size={16} /> {t('book.addToCalendar')}
             </Button>
             <Button
               block
               variant="danger"
               onClick={async () => {
                 await cancelAppointment(completed.id);
-                showToast('Ամրագրումը չեղարկված է');
+                showToast(t('book.cancelBooking'));
                 setStep('services');
                 resetDraft();
               }}
             >
-              Չեղարկել ամրագրումը
+              {t('book.cancelBooking')}
             </Button>
-            <p style={{ marginTop: 20, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              Powered by QueueFlow
-            </p>
+            <p style={{ marginTop: 20, fontSize: '0.75rem', color: 'var(--text-muted)' }}>{t('common.poweredBy')}</p>
           </div>
         )}
       </div>
-      <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-        Powered by QueueFlow
-      </p>
+      <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.7rem', color: 'var(--text-muted)' }}>{t('common.poweredBy')}</p>
       <Toast />
     </div>
   );
