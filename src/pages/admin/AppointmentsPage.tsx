@@ -3,11 +3,13 @@ import { Plus } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { useAppStore } from '../../store/useAppStore';
-import { TODAY, channelLabels } from '../../data/demoData';
+import { TODAY } from '../../data/demoData';
 import { formatAMD } from '../../utils/format';
 import type { AppointmentStatus } from '../../types';
+import { useI18n } from '../../i18n/useI18n';
 
 export function AppointmentsPage() {
+  const { t } = useI18n();
   const appointments = useAppStore((s) => s.appointments);
   const openModal = useAppStore((s) => s.openAppointmentModal);
   const updateStatus = useAppStore((s) => s.updateAppointmentStatus);
@@ -23,24 +25,24 @@ export function AppointmentsPage() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Ամրագրումներ</h1>
-          <p className="page-subtitle">Բոլոր ալիքներից եկող ամրագրումները</p>
+          <h1 className="page-title">{t('admin.appts.title')}</h1>
+          <p className="page-subtitle">{t('admin.appts.subtitle')}</p>
         </div>
         <Button onClick={() => openModal()}>
-          <Plus size={16} /> Նոր ամրագրում
+          <Plus size={16} /> {t('common.newAppointment')}
         </Button>
       </div>
 
       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
         {(
           [
-            ['all', 'Բոլորը'],
-            ['confirmed', 'Հաստատված'],
-            ['waiting', 'Սպասում'],
-            ['in_progress', 'Ընթացքում'],
-            ['completed', 'Ավարտված'],
-            ['cancelled', 'Չեղարկված'],
-            ['no_show', 'No-show'],
+            ['all', t('common.all')],
+            ['confirmed', t('status.confirmed')],
+            ['waiting', t('status.waiting')],
+            ['in_progress', t('status.in_progress')],
+            ['completed', t('status.completed')],
+            ['cancelled', t('status.cancelled')],
+            ['no_show', t('status.no_show')],
           ] as const
         ).map(([id, label]) => (
           <button key={id} type="button" className={`chip ${filter === id ? 'active' : ''}`} onClick={() => setFilter(id)}>
@@ -54,13 +56,13 @@ export function AppointmentsPage() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Ամսաթիվ</th>
-                <th>Հաճախորդ</th>
-                <th>Ծառայություն</th>
-                <th>Աշխատակից</th>
-                <th>Ալիք</th>
-                <th>Գումար</th>
-                <th>Կարգավիճակ</th>
+                <th>{t('common.date')}</th>
+                <th>{t('common.customer')}</th>
+                <th>{t('common.service')}</th>
+                <th>{t('common.employee')}</th>
+                <th>{t('common.channel')}</th>
+                <th>{t('common.amount')}</th>
+                <th>{t('common.status')}</th>
                 <th></th>
               </tr>
             </thead>
@@ -68,12 +70,12 @@ export function AppointmentsPage() {
               {list.map((a) => (
                 <tr key={a.id} onClick={() => openModal(a)}>
                   <td>
-                    {a.date === TODAY ? 'Այսօր' : a.date} {a.startTime}
+                    {a.date === TODAY ? t('common.today') : a.date} {a.startTime}
                   </td>
                   <td style={{ fontWeight: 650 }}>{a.customerName}</td>
                   <td>{a.serviceName}</td>
                   <td>{a.employeeName}</td>
-                  <td>{channelLabels[a.channel]}</td>
+                  <td>{t(`channel.${a.channel}`)}</td>
                   <td>{formatAMD(a.price)}</td>
                   <td>
                     <StatusBadge status={a.status} />
@@ -88,7 +90,7 @@ export function AppointmentsPage() {
                           void updateStatus(a.id, 'waiting');
                         }}
                       >
-                        Հերթ
+                        {t('admin.appts.toQueue')}
                       </Button>
                     )}
                   </td>

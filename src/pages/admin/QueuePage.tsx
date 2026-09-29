@@ -3,9 +3,11 @@ import { Check, Play, X, ArrowRight, Clock } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { StatusBadge } from '../../components/ui/StatusBadge';
 import { useAppStore } from '../../store/useAppStore';
-import { TODAY, channelLabels } from '../../data/demoData';
+import { TODAY } from '../../data/demoData';
+import { useI18n } from '../../i18n/useI18n';
 
 export function QueuePage() {
+  const { t } = useI18n();
   const appointments = useAppStore((s) => s.appointments);
   const updateStatus = useAppStore((s) => s.updateAppointmentStatus);
   const openModal = useAppStore((s) => s.openAppointmentModal);
@@ -31,24 +33,26 @@ export function QueuePage() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Այսօրվա հերթ</h1>
-          <p className="page-subtitle">Walk-in, հեռախոս և առցանց՝ մեկ հերթում</p>
+          <h1 className="page-title">{t('admin.queue.title')}</h1>
+          <p className="page-subtitle">{t('admin.queue.subtitle')}</p>
         </div>
-        <Button onClick={() => openModal()}>+ Walk-in ավելացնել</Button>
+        <Button onClick={() => openModal()}>{t('admin.queue.addWalkin')}</Button>
       </div>
 
       <div className="grid-3" style={{ marginBottom: 20 }}>
         <div className="card card-pad">
           <div className="stat-value">{waiting.length}</div>
-          <div className="stat-label">մարդ սպասում է</div>
+          <div className="stat-label">{t('admin.queue.peopleWaiting')}</div>
         </div>
         <div className="card card-pad">
-          <div className="stat-value">{avgWait} ր</div>
-          <div className="stat-label">Միջին սպասման ժամանակը</div>
+          <div className="stat-value">
+            {avgWait} {t('common.min')}
+          </div>
+          <div className="stat-label">{t('admin.queue.avgWait')}</div>
         </div>
         <div className="card card-pad">
           <div className="stat-value">{queue.filter((a) => a.status === 'in_progress').length}</div>
-          <div className="stat-label">Ընթացքում է</div>
+          <div className="stat-label">{t('admin.queue.inProgress')}</div>
         </div>
       </div>
 
@@ -60,7 +64,7 @@ export function QueuePage() {
               if (next) void updateStatus(next.id, 'in_progress');
             }}
           >
-            <ArrowRight size={16} /> Հաջորդ հաճախորդ
+            <ArrowRight size={16} /> {t('admin.queue.nextCustomer')}
           </Button>
           <Button
             variant="secondary"
@@ -69,7 +73,7 @@ export function QueuePage() {
               if (next) void updateStatus(next.id, 'in_progress');
             }}
           >
-            <Play size={16} /> Սպասարկումը սկսված է
+            <Play size={16} /> {t('admin.queue.serviceStarted')}
           </Button>
           <Button
             variant="success"
@@ -78,7 +82,7 @@ export function QueuePage() {
               if (cur) void updateStatus(cur.id, 'completed');
             }}
           >
-            <Check size={16} /> Ավարտել
+            <Check size={16} /> {t('common.complete')}
           </Button>
           <Button
             variant="danger"
@@ -87,7 +91,7 @@ export function QueuePage() {
               if (cur) void updateStatus(cur.id, 'cancelled');
             }}
           >
-            <X size={16} /> Չեղարկել
+            <X size={16} /> {t('common.cancelAction')}
           </Button>
         </div>
 
@@ -119,7 +123,7 @@ export function QueuePage() {
               <div>
                 <div style={{ fontWeight: 700, fontSize: '1.05rem' }}>{a.customerName}</div>
                 <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: 2 }}>
-                  {a.serviceName} · {a.employeeName} · {channelLabels[a.channel]}
+                  {a.serviceName} · {a.employeeName} · {t(`channel.${a.channel}`)}
                 </div>
                 <div
                   style={{
@@ -133,9 +137,9 @@ export function QueuePage() {
                 >
                   <Clock size={12} />
                   {a.waitingMinutes != null
-                    ? `${a.waitingMinutes} րոպե սպասում`
+                    ? `${a.waitingMinutes} ${t('admin.queue.waitingMins')}`
                     : a.status === 'waiting'
-                      ? 'Նոր միացած'
+                      ? t('admin.queue.justJoined')
                       : a.startTime}
                 </div>
               </div>
@@ -144,12 +148,12 @@ export function QueuePage() {
                 <div style={{ display: 'flex', gap: 6 }}>
                   {a.status === 'waiting' && (
                     <Button size="sm" variant="secondary" onClick={() => void updateStatus(a.id, 'in_progress')}>
-                      Սկսել
+                      {t('common.start')}
                     </Button>
                   )}
                   {a.status === 'in_progress' && (
                     <Button size="sm" variant="success" onClick={() => void updateStatus(a.id, 'completed')}>
-                      Ավարտել
+                      {t('common.complete')}
                     </Button>
                   )}
                 </div>

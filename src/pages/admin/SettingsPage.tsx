@@ -2,18 +2,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { useAppStore } from '../../store/useAppStore';
-
-const dayLabels: Record<string, string> = {
-  monday: 'Երկուշաբթի',
-  tuesday: 'Երեքշաբթի',
-  wednesday: 'Չորեքշաբթի',
-  thursday: 'Հինգշաբթի',
-  friday: 'Ուրբաթ',
-  saturday: 'Շաբաթ',
-  sunday: 'Կիրակի',
-};
+import { useI18n } from '../../i18n/useI18n';
 
 export function SettingsPage() {
+  const { t } = useI18n();
   const business = useAppStore((s) => s.business);
   const updateBusiness = useAppStore((s) => s.updateBusiness);
 
@@ -25,12 +17,22 @@ export function SettingsPage() {
   const [rules, setRules] = useState(business.bookingRules);
   const [hours, setHours] = useState(business.workingHours);
 
+  const dayLabels: Record<string, string> = {
+    monday: t('day.monday'),
+    tuesday: t('day.tuesday'),
+    wednesday: t('day.wednesday'),
+    thursday: t('day.thursday'),
+    friday: t('day.friday'),
+    saturday: t('day.saturday'),
+    sunday: t('day.sunday'),
+  };
+
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Կարգավորումներ</h1>
-          <p className="page-subtitle">Բիզնեսի պրոֆիլ և ամրագրման կանոններ</p>
+          <h1 className="page-title">{t('admin.settings.title')}</h1>
+          <p className="page-subtitle">{t('admin.settings.subtitle')}</p>
         </div>
         <Button
           onClick={() =>
@@ -45,31 +47,31 @@ export function SettingsPage() {
             })
           }
         >
-          Պահպանել
+          {t('common.save')}
         </Button>
       </div>
 
       <div className="grid-2">
         <div className="card card-pad">
-          <h2 className="card-title" style={{ marginBottom: 16 }}>Բիզնեսի տվյալներ</h2>
+          <h2 className="card-title" style={{ marginBottom: 16 }}>{t('admin.settings.business')}</h2>
           <div className="form-group">
-            <label className="form-label">Անուն</label>
+            <label className="form-label">{t('common.name')}</label>
             <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Հասցե</label>
+            <label className="form-label">{t('admin.settings.address')}</label>
             <input className="form-input" value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Քաղաք</label>
+            <label className="form-label">{t('admin.settings.city')}</label>
             <input className="form-input" value={city} onChange={(e) => setCity(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Հեռախոս</label>
+            <label className="form-label">{t('common.phone')}</label>
             <input className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Լոգո</label>
+            <label className="form-label">{t('admin.settings.logo')}</label>
             <div
               style={{
                 width: 72,
@@ -89,7 +91,7 @@ export function SettingsPage() {
         </div>
 
         <div className="card card-pad">
-          <h2 className="card-title" style={{ marginBottom: 16 }}>Աշխատանքային ժամեր</h2>
+          <h2 className="card-title" style={{ marginBottom: 16 }}>{t('admin.settings.workingHours')}</h2>
           {Object.entries(hours).map(([day, h]) => (
             <div key={day} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
               <span style={{ width: 100, fontSize: '0.875rem', fontWeight: 550 }}>{dayLabels[day]}</span>
@@ -111,26 +113,26 @@ export function SettingsPage() {
         </div>
 
         <div className="card card-pad">
-          <h2 className="card-title" style={{ marginBottom: 16 }}>Ամրագրման կանոններ</h2>
+          <h2 className="card-title" style={{ marginBottom: 16 }}>{t('admin.settings.bookingRules')}</h2>
           <div className="form-group">
-            <label className="form-label">Կանոններ</label>
+            <label className="form-label">{t('admin.settings.rules')}</label>
             <textarea className="form-textarea" value={rules} onChange={(e) => setRules(e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Չեղարկման քաղաքականություն</label>
+            <label className="form-label">{t('admin.settings.cancelPolicy')}</label>
             <textarea className="form-textarea" value={cancellation} onChange={(e) => setCancellation(e.target.value)} />
           </div>
         </div>
 
         <div className="card card-pad">
-          <h2 className="card-title" style={{ marginBottom: 16 }}>Այլ բաժիններ</h2>
+          <h2 className="card-title" style={{ marginBottom: 16 }}>{t('admin.settings.other')}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {(
               [
-                ['/admin/employees', 'Աշխատակիցներ'],
-                ['/admin/services', 'Ծառայություններ'],
-                ['/admin/notifications', 'Ծանուցումներ'],
-                ['/admin/billing', 'Վճարումներ'],
+                ['/admin/employees', t('nav.employees')],
+                ['/admin/services', t('nav.services')],
+                ['/admin/notifications', t('nav.notifications')],
+                ['/admin/billing', t('admin.settings.payments')],
               ] as const
             ).map(([to, label]) => (
               <Link

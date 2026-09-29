@@ -5,12 +5,14 @@ import { Modal } from '../../components/ui/Modal';
 import { useAppStore } from '../../store/useAppStore';
 import { TODAY } from '../../data/demoData';
 import type { Appointment } from '../../types';
+import { useI18n } from '../../i18n/useI18n';
 
 type View = 'day' | 'week' | 'month';
 
 const hours = Array.from({ length: 13 }, (_, i) => `${String(9 + i).padStart(2, '0')}:00`);
 
 export function CalendarPage() {
+  const { t } = useI18n();
   const appointments = useAppStore((s) => s.appointments);
   const employees = useAppStore((s) => s.employees);
   const openModal = useAppStore((s) => s.openAppointmentModal);
@@ -38,11 +40,11 @@ export function CalendarPage() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Օրացույց</h1>
-          <p className="page-subtitle">Աշխատակիցների սյունակներ · բոլոր ալիքների ամրագրումները</p>
+          <h1 className="page-title">{t('admin.cal.title')}</h1>
+          <p className="page-subtitle">{t('admin.cal.subtitle')}</p>
         </div>
         <Button onClick={() => openModal()}>
-          <Plus size={16} /> Նոր ամրագրում
+          <Plus size={16} /> {t('common.newAppointment')}
         </Button>
       </div>
 
@@ -52,19 +54,19 @@ export function CalendarPage() {
             <Button variant="secondary" size="sm" onClick={() => shiftDate(-1)}>
               <ChevronLeft size={16} />
             </Button>
-            <strong>{selectedDate === TODAY ? 'Այսօր' : selectedDate}</strong>
+            <strong>{selectedDate === TODAY ? t('common.today') : selectedDate}</strong>
             <Button variant="secondary" size="sm" onClick={() => shiftDate(1)}>
               <ChevronRight size={16} />
             </Button>
             <Button variant="ghost" size="sm" onClick={() => setSelectedDate(TODAY)}>
-              Այսօր
+              {t('common.today')}
             </Button>
           </div>
           <div className="tabs">
             {([
-              ['day', 'Օր'],
-              ['week', 'Շաբաթ'],
-              ['month', 'Ամիս'],
+              ['day', t('admin.cal.day')],
+              ['week', t('admin.cal.week')],
+              ['month', t('admin.cal.month')],
             ] as const).map(([id, label]) => (
               <button key={id} className={`tab ${view === id ? 'active' : ''}`} onClick={() => setView(id)}>
                 {label}
@@ -176,7 +178,7 @@ export function CalendarPage() {
             {weekDates.map((d) => (
               <div key={d} style={{ border: '1px solid var(--border)', borderRadius: 12, padding: 10, minHeight: 140 }}>
                 <div style={{ fontWeight: 700, marginBottom: 8, fontSize: '0.85rem' }}>
-                  {d === TODAY ? 'Այսօր' : d.slice(5)}
+                  {d === TODAY ? t('common.today') : d.slice(5)}
                 </div>
                 {appointments
                   .filter((a) => a.date === d && a.status !== 'cancelled')
@@ -211,7 +213,7 @@ export function CalendarPage() {
       {view === 'month' && (
         <div className="card card-pad">
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 6 }}>
-            {['Երկ', 'Երք', 'Չրք', 'Հնգ', 'Ուր', 'Շբթ', 'Կիր'].map((d) => (
+            {[t('day.mon'), t('day.tue'), t('day.wed'), t('day.thu'), t('day.fri'), t('day.sat'), t('day.sun')].map((d) => (
               <div key={d} style={{ textAlign: 'center', fontWeight: 650, fontSize: '0.8rem', color: 'var(--text-muted)', padding: 8 }}>
                 {d}
               </div>
@@ -242,7 +244,9 @@ export function CalendarPage() {
                 >
                   <div style={{ fontWeight: 650 }}>{i + 1}</div>
                   {count > 0 && (
-                    <div style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: 4 }}>{count} այց</div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--primary)', marginTop: 4 }}>
+                      {count} {t('admin.cal.visitCount')}
+                    </div>
                   )}
                 </button>
               );
@@ -254,12 +258,12 @@ export function CalendarPage() {
       <Modal
         open={!!selected}
         onClose={() => setSelected(null)}
-        title="Ամրագրում"
+        title={t('admin.cal.appointment')}
         footer={
           selected && (
             <>
               <Button variant="danger" onClick={() => { void cancelAppointment(selected.id); setSelected(null); }}>
-                Չեղարկել
+                {t('common.cancelAction')}
               </Button>
               <Button
                 variant="secondary"
@@ -268,7 +272,7 @@ export function CalendarPage() {
                   setSelected(null);
                 }}
               >
-                Խմբագրել
+                {t('common.edit')}
               </Button>
               <Button
                 onClick={() => {
@@ -279,7 +283,7 @@ export function CalendarPage() {
                   setSelected(null);
                 }}
               >
-                Տեղափոխել վաղը
+                {t('admin.cal.moveTomorrow')}
               </Button>
             </>
           )
@@ -297,7 +301,7 @@ export function CalendarPage() {
               {selected.date} · {selected.startTime}–{selected.endTime}
             </div>
             <div style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>
-              Քաշեք օրացույցում՝ վերանշանակելու համար (drag & drop)
+              {t('admin.cal.dragHint')}
             </div>
           </div>
         )}

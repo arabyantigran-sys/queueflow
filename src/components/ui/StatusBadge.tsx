@@ -1,6 +1,7 @@
-import { statusLabels } from '../../data/demoData';
 import type { AppointmentStatus, CustomerStatus } from '../../types';
+import { useI18n } from '../../i18n/useI18n';
 
 export function StatusBadge({ status }: { status: AppointmentStatus | CustomerStatus }) {
-  return <span className={`badge badge-${status}`}>{statusLabels[status] ?? status}</span>;
+  const { t } = useI18n();
+  return <span className={`badge badge-${status}`}>{t(`status.${status}`)}</span>;
 }

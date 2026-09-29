@@ -1,13 +1,24 @@
 import { useAppStore } from '../../store/useAppStore';
 import { formatAMD } from '../../utils/format';
+import { useI18n } from '../../i18n/useI18n';
 
-function BarChart({ data, color = 'var(--primary)' }: { data: { label: string; value: number }[]; color?: string }) {
+function BarChart({
+  data,
+  color = 'var(--primary)',
+  thousandShort = 'k',
+}: {
+  data: { label: string; value: number }[];
+  color?: string;
+  thousandShort?: string;
+}) {
   const max = Math.max(...data.map((d) => d.value), 1);
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8, height: 160 }}>
       {data.map((d) => (
         <div key={d.label} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{d.value > 1000 ? `${Math.round(d.value / 1000)}կ` : d.value}</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+            {d.value > 1000 ? `${Math.round(d.value / 1000)}${thousandShort}` : d.value}
+          </div>
           <div
             style={{
               width: '100%',
@@ -53,23 +64,24 @@ function HBar({ data }: { data: { name: string; value: number }[] }) {
 }
 
 export function AnalyticsPage() {
+  const { t } = useI18n();
   const analytics = useAppStore((s) => s.analytics);
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Վիճակագրություն</h1>
-          <p className="page-subtitle">Վերջին 30 օր · իրական դեմո տվյալներ</p>
+          <h1 className="page-title">{t('admin.analytics.title')}</h1>
+          <p className="page-subtitle">{t('admin.analytics.subtitle')}</p>
         </div>
       </div>
 
       <div className="grid-4" style={{ marginBottom: 16 }}>
         {[
-          ['Ընդհանուր ամրագրումներ', analytics.totalAppointments],
-          ['Ավարտված', analytics.completed],
-          ['Չեղարկված', analytics.cancelled],
-          ['No-show', analytics.noShow],
+          [t('admin.analytics.totalAppts'), analytics.totalAppointments],
+          [t('admin.analytics.completed'), analytics.completed],
+          [t('admin.analytics.cancelled'), analytics.cancelled],
+          [t('admin.analytics.noshow'), analytics.noShow],
         ].map(([l, v]) => (
           <div className="card card-pad" key={l as string}>
             <div className="stat-value">{v}</div>
@@ -81,48 +93,50 @@ export function AnalyticsPage() {
       <div className="grid-3" style={{ marginBottom: 16 }}>
         <div className="card card-pad">
           <div className="stat-value" style={{ fontSize: '1.5rem' }}>{formatAMD(analytics.revenue)}</div>
-          <div className="stat-label">Եկամուտ</div>
+          <div className="stat-label">{t('admin.analytics.revenue')}</div>
         </div>
         <div className="card card-pad">
           <div className="stat-value" style={{ fontSize: '1.5rem' }}>{formatAMD(analytics.averageBookingValue)}</div>
-          <div className="stat-label">Միջին ամրագրում</div>
+          <div className="stat-label">{t('admin.analytics.avgBooking')}</div>
         </div>
         <div className="card card-pad">
           <div className="stat-value" style={{ fontSize: '1.5rem' }}>{analytics.repeatCustomers}%</div>
-          <div className="stat-label">Կրկնվող հաճախորդներ</div>
+          <div className="stat-label">{t('admin.analytics.repeat')}</div>
         </div>
       </div>
 
       <div className="grid-2" style={{ marginBottom: 16 }}>
         <div className="card card-pad">
-          <h3 className="card-title" style={{ marginBottom: 16 }}>Ամրագրումներ ժամանակի ընթացքում</h3>
-          <BarChart data={analytics.appointmentsOverTime} />
+          <h3 className="card-title" style={{ marginBottom: 16 }}>{t('admin.analytics.apptsOverTime')}</h3>
+          <BarChart data={analytics.appointmentsOverTime} thousandShort={t('common.thousandShort')} />
         </div>
         <div className="card card-pad">
-          <h3 className="card-title" style={{ marginBottom: 16 }}>Եկամուտ ժամանակի ընթացքում</h3>
-          <BarChart data={analytics.revenueOverTime} color="#ea580c" />
+          <h3 className="card-title" style={{ marginBottom: 16 }}>{t('admin.analytics.revenueOverTime')}</h3>
+          <BarChart data={analytics.revenueOverTime} color="#ea580c" thousandShort={t('common.thousandShort')} />
         </div>
       </div>
 
       <div className="grid-3">
         <div className="card card-pad">
-          <h3 className="card-title" style={{ marginBottom: 16 }}>Ամենահայտնի ծառայություններ</h3>
+          <h3 className="card-title" style={{ marginBottom: 16 }}>{t('admin.analytics.popular')}</h3>
           <HBar data={analytics.popularServices.map((s) => ({ name: s.name, value: s.value }))} />
         </div>
         <div className="card card-pad">
-          <h3 className="card-title" style={{ marginBottom: 16 }}>Աշխատակիցների արդյունք</h3>
+          <h3 className="card-title" style={{ marginBottom: 16 }}>{t('admin.analytics.empPerf')}</h3>
           {analytics.employeePerformance.map((e) => (
             <div key={e.name} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
               <div>
                 <div style={{ fontWeight: 650 }}>{e.name}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{e.appointments} այց</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {e.appointments} {t('common.visits')}
+                </div>
               </div>
               <strong>{formatAMD(e.revenue)}</strong>
             </div>
           ))}
         </div>
         <div className="card card-pad">
-          <h3 className="card-title" style={{ marginBottom: 16 }}>Պիկ ժամեր</h3>
+          <h3 className="card-title" style={{ marginBottom: 16 }}>{t('admin.analytics.peakHours')}</h3>
           <HBar data={analytics.peakHours.map((p) => ({ name: p.hour, value: p.count }))} />
         </div>
       </div>

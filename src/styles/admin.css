@@ -200,4 +200,100 @@
   .menu-toggle {
     display: grid;
   }
+
+  .page {
+    padding: 16px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-title {
+    font-size: 1.25rem;
+  }
+
+  .topbar {
+    padding: 0 12px;
+  }
+
+  .user-chip {
+    display: none;
+  }
+
+  .grid-4,
+  .grid-3,
+  .grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dash-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .table-wrap {
+    margin: 0 -4px;
+  }
+
+  table.data-table {
+    font-size: 0.8rem;
+  }
+
+  table.data-table th,
+  table.data-table td {
+    padding: 10px 8px;
+  }
+
+  .qr-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cal-scroll,
+  .calendar-day-grid,
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .topbar-actions .lang-switcher,
+  .topbar-actions {
+    gap: 6px;
+  }
+
+  .business-selector {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+
+  .card-pad {
+    padding: 14px;
+  }
+
+  .modal {
+    width: calc(100vw - 24px) !important;
+    max-width: 100% !important;
+    margin: 12px;
+    max-height: calc(100vh - 24px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .page {
+    padding: 12px;
+  }
+
+  .page-header .btn,
+  .page-header button {
+    width: 100%;
+  }
+
+  .stat-grid,
+  .stats-row {
+    grid-template-columns: 1fr 1fr !important;
+  }
 }

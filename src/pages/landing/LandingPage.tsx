@@ -45,6 +45,13 @@ const featureDefs = [
 
 const channels = ['Instagram', 'Phone', 'Website', 'QR', 'Walk-in', 'QueueFlow App'];
 
+const planFeatureCounts: Record<string, number> = {
+  starter: 5,
+  business: 6,
+  pro: 5,
+  enterprise: 5,
+};
+
 export function LandingPage() {
   const { t } = useI18n();
 
@@ -305,15 +312,17 @@ export function LandingPage() {
             <div key={plan.id} className={`price-card ${plan.recommended ? 'recommended' : ''}`}>
               {plan.recommended && <div className="price-badge">{t('landing.recommended')}</div>}
               <div style={{ fontWeight: 750, letterSpacing: '0.04em', fontSize: '0.85rem' }}>{plan.name}</div>
-              <div className="price-amount">{plan.price == null ? 'Custom' : formatAMD(plan.price)}</div>
+              <div className="price-amount">{plan.price == null ? t('common.custom') : formatAMD(plan.price)}</div>
               <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                 {plan.price == null ? t('landing.customQuote') : t('landing.perMonth')}
               </div>
-              <p style={{ marginTop: 12, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{plan.description}</p>
+              <p style={{ marginTop: 12, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                {t(`plan.${plan.id}.desc`)}
+              </p>
               <ul className="price-features">
-                {plan.features.map((f) => (
-                  <li key={f}>
-                    <Check size={16} color="var(--primary)" /> {f}
+                {Array.from({ length: planFeatureCounts[plan.id] }, (_, i) => (
+                  <li key={i}>
+                    <Check size={16} color="var(--primary)" /> {t(`plan.${plan.id}.f${i + 1}`)}
                   </li>
                 ))}
               </ul>

@@ -5,8 +5,10 @@ import { Download, Copy, ExternalLink } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useAppStore } from '../../store/useAppStore';
 import { formatAMD } from '../../utils/format';
+import { useI18n } from '../../i18n/useI18n';
 
 export function QRPage() {
+  const { t } = useI18n();
   const business = useAppStore((s) => s.business);
   const services = useAppStore((s) => s.services);
   const showToast = useAppStore((s) => s.showToast);
@@ -16,7 +18,7 @@ export function QRPage() {
   const downloadQr = () => {
     const canvas = canvasRef.current;
     if (!canvas) {
-      showToast('QR-ը պատրաստ չէ');
+      showToast(t('admin.qr.notReady'));
       return;
     }
     const url = canvas.toDataURL('image/png');
@@ -24,16 +26,16 @@ export function QRPage() {
     a.href = url;
     a.download = `${business.slug}-booking-qr.png`;
     a.click();
-    showToast('QR-ը ներբեռնված է');
+    showToast(t('admin.qr.downloaded'));
   };
 
   return (
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Ձեր QR Booking</h1>
+          <h1 className="page-title">{t('admin.qr.title')}</h1>
           <p className="page-subtitle">
-            Տեղադրեք այս QR կոդը ձեր սրահում, Instagram-ում կամ այցեքարտի վրա։ Սքանը կբացի՝{' '}
+            {t('admin.qr.subtitle')}{' '}
             <strong>/book/{business.slug}</strong>
           </p>
         </div>
@@ -54,7 +56,6 @@ export function QRPage() {
             }}
           >
             <QRCodeSVG value={link} size={200} level="M" includeMargin bgColor="#ffffff" fgColor="#0f172a" />
-            {/* Hidden canvas for PNG download */}
             <div style={{ position: 'absolute', left: -9999, top: 0 }} aria-hidden>
               <QRCodeCanvas
                 value={link}
@@ -68,14 +69,14 @@ export function QRPage() {
             </div>
           </div>
           <p style={{ color: 'var(--text-secondary)', marginBottom: 8, fontSize: '0.9rem' }}>
-            Հաճախորդը սքանավորում է → բացվում է <strong>{business.name}</strong> ամրագրման էջը
+            {t('admin.qr.scanOpens')} <strong>{business.name}</strong>
           </p>
           <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: '0.8rem' }}>
-            Փորձիր հեռախոսի տեսախցիկով այս էկրանից
+            {t('admin.qr.tryCamera')}
           </p>
           <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
             <Button variant="secondary" onClick={downloadQr}>
-              <Download size={16} /> Ներբեռնել QR
+              <Download size={16} /> {t('admin.qr.download')}
             </Button>
             <Button
               onClick={async () => {
@@ -84,10 +85,10 @@ export function QRPage() {
                 } catch {
                   /* ignore */
                 }
-                showToast('Հղումը պատճենված է');
+                showToast(t('admin.qr.linkCopied'));
               }}
             >
-              <Copy size={16} /> Copy booking link
+              <Copy size={16} /> {t('admin.qr.copyLink')}
             </Button>
           </div>
           <code
@@ -107,10 +108,10 @@ export function QRPage() {
 
         <div className="card card-pad">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h2 className="card-title">Ամրագրման էջի նախադիտում</h2>
+            <h2 className="card-title">{t('admin.qr.preview')}</h2>
             <Link to={`/book/${business.slug}`}>
               <Button variant="ghost" size="sm">
-                <ExternalLink size={14} /> Բացել
+                <ExternalLink size={14} /> {t('admin.qr.open')}
               </Button>
             </Link>
           </div>
@@ -148,7 +149,7 @@ export function QRPage() {
             ))}
             <Link to={`/book/${business.slug}`}>
               <Button block size="sm" style={{ marginTop: 8 }}>
-                Ամրագրել
+                {t('admin.qr.book')}
               </Button>
             </Link>
           </div>

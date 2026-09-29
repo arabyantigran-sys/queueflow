@@ -4,8 +4,10 @@ import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { useAppStore } from '../../store/useAppStore';
 import { formatAMD } from '../../utils/format';
+import { useI18n } from '../../i18n/useI18n';
 
 export function EmployeesPage() {
+  const { t } = useI18n();
   const employees = useAppStore((s) => s.employees);
   const services = useAppStore((s) => s.services);
   const addEmployee = useAppStore((s) => s.addEmployee);
@@ -24,11 +26,13 @@ export function EmployeesPage() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1 className="page-title">Աշխատակիցներ</h1>
-          <p className="page-subtitle">{employees.length} մասնագետ</p>
+          <h1 className="page-title">{t('admin.emp.title')}</h1>
+          <p className="page-subtitle">
+            {employees.length} {t('admin.emp.specialists')}
+          </p>
         </div>
         <Button onClick={() => setOpen(true)}>
-          <Plus size={16} /> Ավելացնել աշխատակից
+          <Plus size={16} /> {t('admin.emp.add')}
         </Button>
       </div>
 
@@ -63,10 +67,21 @@ export function EmployeesPage() {
               </div>
             </div>
             <div style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-              <div>Ժամեր: <strong style={{ color: 'var(--text)' }}>{e.workingHours}</strong></div>
-              <div>Այսօր: <strong style={{ color: 'var(--text)' }}>{e.appointmentsToday} այց</strong></div>
-              <div>Եկամուտ: <strong style={{ color: 'var(--text)' }}>{formatAMD(e.revenue)}</strong></div>
-              <div>Վարկանիշ: <strong style={{ color: 'var(--text)' }}>⭐ {e.rating}</strong></div>
+              <div>
+                {t('admin.emp.hours')}: <strong style={{ color: 'var(--text)' }}>{e.workingHours}</strong>
+              </div>
+              <div>
+                {t('admin.emp.today')}:{' '}
+                <strong style={{ color: 'var(--text)' }}>
+                  {e.appointmentsToday} {t('common.visits')}
+                </strong>
+              </div>
+              <div>
+                {t('admin.emp.revenue')}: <strong style={{ color: 'var(--text)' }}>{formatAMD(e.revenue)}</strong>
+              </div>
+              <div>
+                {t('admin.emp.rating')}: <strong style={{ color: 'var(--text)' }}>⭐ {e.rating}</strong>
+              </div>
             </div>
           </button>
         ))}
@@ -75,40 +90,50 @@ export function EmployeesPage() {
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        title="Նոր աշխատակից"
+        title={t('admin.emp.newTitle')}
         footer={
           <>
             <Button variant="secondary" onClick={() => setOpen(false)}>
-              Փակել
+              {t('common.close')}
             </Button>
             <Button
               onClick={async () => {
                 if (!name) return;
-                await addEmployee({ name, role: role || 'Մասնագետ', phone: phone || '091 000 000', workingHours: hours });
+                await addEmployee({
+                  name,
+                  role: role || t('admin.emp.defaultRole'),
+                  phone: phone || '091 000 000',
+                  workingHours: hours,
+                });
                 setOpen(false);
                 setName('');
                 setRole('');
               }}
             >
-              Պահպանել
+              {t('common.save')}
             </Button>
           </>
         }
       >
         <div className="form-group">
-          <label className="form-label">Անուն</label>
+          <label className="form-label">{t('common.name')}</label>
           <input className="form-input" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="form-group">
-          <label className="form-label">Դեր</label>
-          <input className="form-input" value={role} onChange={(e) => setRole(e.target.value)} placeholder="Վարսահարդար" />
+          <label className="form-label">{t('admin.emp.role')}</label>
+          <input
+            className="form-input"
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            placeholder={t('admin.emp.rolePlaceholder')}
+          />
         </div>
         <div className="form-group">
-          <label className="form-label">Հեռախոս</label>
+          <label className="form-label">{t('common.phone')}</label>
           <input className="form-input" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="091 123 456" />
         </div>
         <div className="form-group">
-          <label className="form-label">Աշխատանքային ժամեր</label>
+          <label className="form-label">{t('admin.emp.workingHours')}</label>
           <input className="form-input" value={hours} onChange={(e) => setHours(e.target.value)} />
         </div>
       </Modal>
@@ -126,7 +151,7 @@ export function EmployeesPage() {
                 setDetailId(null);
               }}
             >
-              <Trash2 size={16} /> Հեռացնել
+              <Trash2 size={16} /> {t('common.remove')}
             </Button>
           )
         }
@@ -136,8 +161,10 @@ export function EmployeesPage() {
             <p style={{ marginBottom: 12 }}>
               <strong>{detail.role}</strong> · {detail.phone}
             </p>
-            <p style={{ marginBottom: 8, color: 'var(--text-secondary)' }}>Աշխատանքային ժամեր: {detail.workingHours}</p>
-            <h4 style={{ marginBottom: 8 }}>Ծառայություններ</h4>
+            <p style={{ marginBottom: 8, color: 'var(--text-secondary)' }}>
+              {t('admin.emp.workingHours')}: {detail.workingHours}
+            </p>
+            <h4 style={{ marginBottom: 8 }}>{t('admin.emp.services')}</h4>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {services
                 .filter((s) => detail.services.includes(s.id) || detail.services.length === 0)
@@ -150,11 +177,11 @@ export function EmployeesPage() {
             <div className="grid-2" style={{ marginTop: 16 }}>
               <div className="card card-pad" style={{ boxShadow: 'none' }}>
                 <div className="stat-value" style={{ fontSize: '1.25rem' }}>{detail.appointmentsToday}</div>
-                <div className="stat-label">Այսօրվա այցեր</div>
+                <div className="stat-label">{t('admin.emp.todayVisits')}</div>
               </div>
               <div className="card card-pad" style={{ boxShadow: 'none' }}>
                 <div className="stat-value" style={{ fontSize: '1.25rem' }}>{formatAMD(detail.revenue)}</div>
-                <div className="stat-label">Արդյունավետություն</div>
+                <div className="stat-label">{t('admin.emp.performance')}</div>
               </div>
             </div>
           </>

@@ -390,6 +390,12 @@
   .hero {
     grid-template-columns: 1fr;
     padding-top: 40px;
+    padding-left: 16px;
+    padding-right: 16px;
+    gap: 28px;
+  }
+  .hero h1 {
+    font-size: 1.75rem;
   }
   .preview-grid {
     grid-template-columns: 1fr 1fr;
@@ -407,13 +413,41 @@
     grid-template-columns: 1fr;
   }
   .pricing-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
   .price-card.recommended {
     transform: none;
   }
+  .landing-nav {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
   .landing-nav-links .hide-sm {
     display: none;
+  }
+  .landing-nav-links {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .section {
+    padding: 48px 16px;
+  }
+  .phone-frame {
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .unified {
+    padding: 24px 16px;
+  }
+  .channel-row {
+    gap: 8px;
+  }
+  .channel-pill {
+    font-size: 0.8rem;
+    padding: 8px 12px;
   }
 }
 
@@ -425,5 +459,54 @@
   }
   .preview-grid {
     grid-template-columns: 1fr;
+  }
+  .landing-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px 16px;
+  }
+  .hero-ctas {
+    flex-direction: column;
+  }
+  .hero-ctas .btn,
+  .hero-ctas a {
+    width: 100%;
+  }
+  .hero-ctas a .btn {
+    width: 100%;
+  }
+  .landing-nav .brand {
+    font-size: 1.15rem;
+  }
+  .hero h1 {
+    font-size: 1.5rem;
+    line-height: 1.25;
+  }
+  .hero p,
+  .section-head p {
+    font-size: 0.95rem;
+  }
+  .phone-frame {
+    max-width: 100%;
+    transform: none;
+  }
+  .price-card {
+    padding: 20px 16px;
+  }
+  .channel-row {
+    justify-content: flex-start;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .channel-pill {
+    flex-shrink: 0;
+  }
+  .unified img,
+  .hero img,
+  .phone-frame img {
+    max-width: 100%;
+    height: auto;
   }
 }

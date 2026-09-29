@@ -5,17 +5,12 @@ import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import type { Channel } from '../../types';
 import { timeSlots } from '../../data/demoData';
+import { useI18n } from '../../i18n/useI18n';
 
-const channelOptions: { value: Channel; label: string }[] = [
-  { value: 'phone', label: 'Հեռախոս' },
-  { value: 'walk_in', label: 'Walk-in' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'website', label: 'Կայք' },
-  { value: 'qr', label: 'QR' },
-  { value: 'queueflow', label: 'QueueFlow' },
-];
+const channelValues: Channel[] = ['phone', 'walk_in', 'instagram', 'website', 'qr', 'queueflow'];
 
 export function AppointmentModal() {
+  const { t } = useI18n();
   const open = useAppStore((s) => s.appointmentModalOpen);
   const editing = useAppStore((s) => s.editingAppointment);
   const close = useAppStore((s) => s.closeAppointmentModal);
@@ -123,22 +118,22 @@ export function AppointmentModal() {
     <Modal
       open={open}
       onClose={close}
-      title={editing ? 'Խմբագրել ամրագրումը' : 'Նոր ամրագրում'}
+      title={editing ? t('admin.modal.editTitle') : t('admin.modal.newTitle')}
       footer={
         <>
           <Button variant="secondary" onClick={close}>
-            Փակել
+            {t('common.close')}
           </Button>
           <Button onClick={handleSave} disabled={saving || !customerName || !customerPhone}>
-            {saving ? 'Պահպանում...' : 'Պահպանել'}
+            {saving ? t('common.saving') : t('common.save')}
           </Button>
         </>
       }
     >
       <div className="form-group">
-        <label className="form-label">Գոյություն ունեցող հաճախորդ</label>
+        <label className="form-label">{t('admin.modal.existingCustomer')}</label>
         <select className="form-select" defaultValue="" onChange={(e) => onPickCustomer(e.target.value)}>
-          <option value="">— Ընտրել կամ լրացնել նոր —</option>
+          <option value="">{t('admin.modal.pickOrNew')}</option>
           {customers.map((c) => (
             <option key={c.id} value={c.id}>
               {c.name} · {c.phone}
@@ -149,32 +144,42 @@ export function AppointmentModal() {
 
       <div className="grid-2">
         <div className="form-group">
-          <label className="form-label">Անուն</label>
-          <input className="form-input" value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="Օր. Անի Հակոբյան" />
+          <label className="form-label">{t('common.name')}</label>
+          <input
+            className="form-input"
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder={t('admin.modal.namePlaceholder')}
+          />
         </div>
         <div className="form-group">
-          <label className="form-label">Հեռախոս</label>
-          <input className="form-input" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} placeholder="091 123 456" />
+          <label className="form-label">{t('common.phone')}</label>
+          <input
+            className="form-input"
+            value={customerPhone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+            placeholder="091 123 456"
+          />
         </div>
       </div>
 
       <div className="form-group">
-        <label className="form-label">Ալիք</label>
+        <label className="form-label">{t('common.channel')}</label>
         <select className="form-select" value={channel} onChange={(e) => setChannel(e.target.value as Channel)}>
-          {channelOptions.map((c) => (
-            <option key={c.value} value={c.value}>
-              {c.label}
+          {channelValues.map((c) => (
+            <option key={c} value={c}>
+              {t(`channel.${c}`)}
             </option>
           ))}
         </select>
         <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-          Հեռախոս, Instagram կամ walk-in — բոլորը մեկ օրացույցում
+          {t('admin.modal.channelHint')}
         </p>
       </div>
 
       <div className="grid-2">
         <div className="form-group">
-          <label className="form-label">Ծառայություն</label>
+          <label className="form-label">{t('common.service')}</label>
           <select className="form-select" value={serviceId} onChange={(e) => setServiceId(e.target.value)}>
             {services.map((s) => (
               <option key={s.id} value={s.id}>
@@ -184,7 +189,7 @@ export function AppointmentModal() {
           </select>
         </div>
         <div className="form-group">
-          <label className="form-label">Աշխատակից</label>
+          <label className="form-label">{t('common.employee')}</label>
           <select className="form-select" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
             {employees.map((e) => (
               <option key={e.id} value={e.id}>
@@ -197,15 +202,15 @@ export function AppointmentModal() {
 
       <div className="grid-2">
         <div className="form-group">
-          <label className="form-label">Ամսաթիվ</label>
+          <label className="form-label">{t('common.date')}</label>
           <input className="form-input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
         </div>
         <div className="form-group">
-          <label className="form-label">Ժամ</label>
+          <label className="form-label">{t('common.time')}</label>
           <select className="form-select" value={time} onChange={(e) => setTime(e.target.value)}>
-            {timeSlots.map((t) => (
-              <option key={t} value={t}>
-                {t}
+            {timeSlots.map((slot) => (
+              <option key={slot} value={slot}>
+                {slot}
               </option>
             ))}
           </select>
@@ -213,8 +218,13 @@ export function AppointmentModal() {
       </div>
 
       <div className="form-group">
-        <label className="form-label">Նշումներ</label>
-        <textarea className="form-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Լրացուցիչ տեղեկություն..." />
+        <label className="form-label">{t('common.notes')}</label>
+        <textarea
+          className="form-textarea"
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder={t('admin.modal.notesPlaceholder')}
+        />
       </div>
     </Modal>
   );
