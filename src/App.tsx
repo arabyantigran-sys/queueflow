@@ -19,8 +19,10 @@ import { BillingPage } from './pages/admin/BillingPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
 
 export default function App() {
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || undefined;
+
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
