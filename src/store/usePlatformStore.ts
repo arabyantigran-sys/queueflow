@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { platformApi } from '../data/platformApi';
+import { seedPlatformSalons, seedSalonRequests } from '../data/platformData';
+import { demoBusiness } from '../data/demoData';
 import type { Business, PlanId, SalonLifecycle, SalonRequest, SalonRequestStatus } from '../types';
 
 interface PlatformState {
@@ -46,10 +48,18 @@ export const usePlatformStore = create<PlatformState>((set, get) => ({
     set({ loading: true });
     try {
       const [requests, salons] = await Promise.all([
-        platformApi.listRequests(),
-        platformApi.listSalons(),
+        platformApi.listRequests().catch(() => structuredClone(seedSalonRequests)),
+        platformApi.listSalons().catch(() => [demoBusiness, ...seedPlatformSalons]),
       ]);
-      set({ requests, salons });
+      set({
+        requests: requests.length ? requests : structuredClone(seedSalonRequests),
+        salons: salons.length ? salons : [demoBusiness, ...seedPlatformSalons],
+      });
+    } catch {
+      set({
+        requests: structuredClone(seedSalonRequests),
+        salons: [demoBusiness, ...seedPlatformSalons],
+      });
     } finally {
       set({ loading: false });
     }

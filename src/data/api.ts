@@ -323,11 +323,16 @@ const sbApi = {
 
   async ensureBusinesses(list: Business[]): Promise<void> {
     const sb = requireSb();
-    const existing = await this.listBusinesses();
+    let existing: Business[] = [];
+    try {
+      existing = await this.listBusinesses();
+    } catch {
+      existing = [];
+    }
     const ids = new Set(existing.map((b) => b.id));
-    const missing = list.filter((b) => !ids.has(b.id));
+    const missing = list.filter((b) => !ids.has(b.id) && !existing.some((e) => e.slug === b.slug));
     for (const b of missing) {
-      const row = {
+      const base = {
         id: b.id,
         name: b.name,
         slug: b.slug,
@@ -344,12 +349,19 @@ const sbApi = {
         working_hours: b.workingHours,
         cancellation_policy: b.cancellationPolicy,
         booking_rules: b.bookingRules,
+      };
+      const full = {
+        ...base,
         status: b.status ?? 'active',
         owner_email: b.ownerEmail ?? '',
         owner_phone: b.ownerPhone ?? '',
         trial_ends_at: b.trialEndsAt ?? null,
       };
-      await sb.from('businesses').upsert(row);
+      const { error } = await sb.from('businesses').upsert(full);
+      if (error) {
+        // Older schema without platform columns — still insert core fields
+        await sb.from('businesses').upsert(base);
+      }
     }
   },
 

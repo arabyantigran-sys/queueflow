@@ -87,12 +87,49 @@ export const platformApi = {
         .from('salon_requests')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data) {
+
+      if (!error && data && data.length > 0) {
         return data.map((r) => mapRequest(r as Record<string, unknown>));
       }
+
+      // Empty table or missing table → seed demo requests (and local fallback)
+      if (!error && data && data.length === 0) {
+        await this.seedRequestsToSupabase();
+        const again = await supabase
+          .from('salon_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (!again.error && again.data && again.data.length > 0) {
+          return again.data.map((r) => mapRequest(r as Record<string, unknown>));
+        }
+      }
     }
+
     requests = loadRequests();
     return [...requests].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  },
+
+  async seedRequestsToSupabase(): Promise<void> {
+    if (!isSupabaseConfigured || !supabase) return;
+    const rows = seedSalonRequests.map((req) => ({
+      id: req.id,
+      business_name: req.businessName,
+      owner_name: req.ownerName,
+      owner_email: req.ownerEmail,
+      owner_phone: req.ownerPhone,
+      city: req.city,
+      type: req.type,
+      plan_requested: req.planRequested,
+      employees: req.employees,
+      services: req.services,
+      working_hours: req.workingHours,
+      status: req.status,
+      notes: req.notes,
+      created_at: req.createdAt,
+      updated_at: req.updatedAt,
+      approved_business_id: req.approvedBusinessId ?? null,
+    }));
+    await supabase.from('salon_requests').upsert(rows);
   },
 
   async getRequest(id: string): Promise<SalonRequest | undefined> {
@@ -170,16 +207,36 @@ export const platformApi = {
 
   /** Ensure seed salons exist in the shops DB. */
   async ensureSeedSalons(): Promise<void> {
-    await api.ensureBusinesses([demoBusiness, ...seedPlatformSalons]);
+    try {
+      await api.ensureBusinesses([demoBusiness, ...seedPlatformSalons]);
+    } catch {
+      /* ignore — still show seeds below */
+    }
   },
 
   async listSalons(): Promise<Business[]> {
     await this.ensureSeedSalons();
-    const list = await api.listBusinesses();
-    return list.map((b) => ({
-      ...b,
-      status: b.status ?? 'active',
-    }));
+    let list: Business[] = [];
+    try {
+      list = await api.listBusinesses();
+    } catch {
+      list = [];
+    }
+
+    // Merge demo seeds so platform is never empty on first open
+    const byId = new Map<string, Business>();
+    for (const b of [demoBusiness, ...seedPlatformSalons, ...list]) {
+      byId.set(b.id, {
+        ...b,
+        status: b.status ?? 'active',
+      });
+    }
+    // Prefer DB row when both exist
+    for (const b of list) {
+      byId.set(b.id, { ...byId.get(b.id)!, ...b, status: b.status ?? byId.get(b.id)?.status ?? 'active' });
+    }
+
+    return [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
   },
 
   async getSalon(id: string): Promise<Business | undefined> {
