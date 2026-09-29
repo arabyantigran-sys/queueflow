@@ -154,3 +154,32 @@ insert into services (id, business_id, name, name_hy, price, duration, descripti
 ('svc-makeup', 'biz-beauty-house', 'Makeup', 'Դիմահարդարում', 15000, 60, 'Երեկոյան կամ ցերեկային', '["emp-anna","emp-sona"]'),
 ('svc-massage', 'biz-beauty-house', 'Massage', 'Մերսում', 15000, 60, 'Թուլացնող մերսում', '["emp-sona"]')
 on conflict (id) do nothing;
+
+-- Platform admin: salon applications + lifecycle fields
+alter table businesses add column if not exists status text default 'active';
+alter table businesses add column if not exists owner_email text default '';
+alter table businesses add column if not exists owner_phone text default '';
+alter table businesses add column if not exists trial_ends_at text;
+
+create table if not exists salon_requests (
+  id text primary key,
+  business_name text not null,
+  owner_name text not null,
+  owner_email text not null,
+  owner_phone text default '',
+  city text default '',
+  type text default 'beauty_salon',
+  plan_requested text default 'business',
+  employees jsonb default '[]'::jsonb,
+  services jsonb default '[]'::jsonb,
+  working_hours jsonb default '{}'::jsonb,
+  status text not null default 'pending',
+  notes text default '',
+  approved_business_id text,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+alter table salon_requests enable row level security;
+drop policy if exists "public_all_salon_requests" on salon_requests;
+create policy "public_all_salon_requests" on salon_requests for all using (true) with check (true);

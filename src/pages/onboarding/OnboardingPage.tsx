@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { useAppStore } from '../../store/useAppStore';
 import { slugify } from '../../data/api';
 import type { BusinessType } from '../../types';
-import { CheckCircle2, Copy, ExternalLink } from 'lucide-react';
+import { CheckCircle2 } from 'lucide-react';
 
 const types: { id: BusinessType; label: string }[] = [
   { id: 'beauty_salon', label: 'Գեղեցկության սրահ' },
@@ -31,7 +31,6 @@ export function OnboardingPage() {
   const onboarding = useAppStore((s) => s.onboarding);
   const setOnboarding = useAppStore((s) => s.setOnboarding);
   const finishOnboarding = useAppStore((s) => s.finishOnboarding);
-  const business = useAppStore((s) => s.business);
   const showToast = useAppStore((s) => s.showToast);
 
   const [empName, setEmpName] = useState('');
@@ -48,11 +47,6 @@ export function OnboardingPage() {
     () => slugify(onboarding.businessName || 'nor-sarah'),
     [onboarding.businessName]
   );
-
-  const bookingUrl =
-    typeof window !== 'undefined'
-      ? `${window.location.origin}/book/${business.slug}`
-      : `/book/${business.slug}`;
 
   const next = () => setOnboarding({ step: Math.min(step + 1, 7) });
   const back = () => setOnboarding({ step: Math.max(step - 1, 1) });
@@ -271,45 +265,20 @@ export function OnboardingPage() {
         {step === 7 && (
           <div style={{ textAlign: 'center', padding: '24px 0' }}>
             <CheckCircle2 size={56} color="var(--success)" style={{ marginBottom: 16 }} />
-            <h1 style={{ fontSize: '1.6rem', marginBottom: 8 }}>{business.name} պատրաստ է</h1>
+            <h1 style={{ fontSize: '1.6rem', marginBottom: 8 }}>Հայտը ուղարկված է</h1>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 12 }}>
-              Հաճախորդների ամրագրման էջը
+              <strong>{onboarding.businessName}</strong> սրահի հայտը ստացվել է։ QueueFlow թիմը կստուգի և
+              կհաստատի՝ կարգավիճակը կփոխվի ընթացքում։
             </p>
-            <code
-              style={{
-                display: 'block',
-                padding: 12,
-                background: 'var(--surface-2)',
-                borderRadius: 10,
-                fontSize: '0.85rem',
-                wordBreak: 'break-all',
-                marginBottom: 16,
-              }}
-            >
-              {bookingUrl}
-            </code>
+            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 20 }}>
+              Հայտի ID · {onboarding.submittedRequestId}
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <Button
-                variant="secondary"
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(bookingUrl);
-                  } catch {
-                    /* ignore */
-                  }
-                  showToast('Հղումը պատճենված է');
-                }}
-              >
-                <Copy size={16} /> Պատճենել booking լինկը
+              <Button size="lg" onClick={() => navigate('/')}>
+                Վերադառնալ գլխավոր
               </Button>
-              <Button variant="secondary" onClick={() => navigate(`/book/${business.slug}`)}>
-                <ExternalLink size={16} /> Բացել ամրագրման էջը
-              </Button>
-              <Button size="lg" onClick={() => navigate('/admin')}>
-                Բացել Dashboard
-              </Button>
-              <Link to="/admin/qr" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 600 }}>
-                QR Booking →
+              <Link to="/login" style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 600 }}>
+                Սրահի մուտք (հաստատումից հետո) →
               </Link>
             </div>
           </div>
@@ -326,7 +295,7 @@ export function OnboardingPage() {
               </Button>
             ) : (
               <Button onClick={() => void finish()} disabled={saving}>
-                {saving ? 'Ստեղծում...' : 'Ստեղծել սրահը'}
+                {saving ? 'Ուղարկում...' : 'Ուղարկել հայտը'}
               </Button>
             )}
           </div>

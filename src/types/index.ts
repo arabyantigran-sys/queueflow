@@ -27,6 +27,10 @@ export type BusinessType =
 
 export type PlanId = 'starter' | 'business' | 'pro' | 'enterprise';
 
+export type SalonLifecycle = 'trial' | 'active' | 'suspended';
+
+export type SalonRequestStatus = 'pending' | 'reviewing' | 'approved' | 'rejected';
+
 export interface Business {
   id: string;
   name: string;
@@ -45,6 +49,31 @@ export interface Business {
   workingHours: WorkingHours;
   cancellationPolicy: string;
   bookingRules: string;
+  /** Platform-managed lifecycle */
+  status?: SalonLifecycle;
+  ownerEmail?: string;
+  ownerPhone?: string;
+  createdAt?: string;
+  trialEndsAt?: string;
+}
+
+export interface SalonRequest {
+  id: string;
+  businessName: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  city: string;
+  type: BusinessType;
+  planRequested: PlanId;
+  employees: { name: string; role: string }[];
+  services: { name: string; price: number; duration: number }[];
+  workingHours: WorkingHours;
+  status: SalonRequestStatus;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
+  approvedBusinessId?: string;
 }
 
 export interface WorkingHours {
@@ -139,9 +168,15 @@ export interface OnboardingState {
   step: number;
   businessName: string;
   businessType: BusinessType | '';
+  ownerName: string;
+  ownerEmail: string;
+  ownerPhone: string;
+  city: string;
+  planRequested: PlanId;
   employees: { name: string; role: string }[];
   services: { name: string; price: number; duration: number }[];
   workingHours: WorkingHours;
+  submittedRequestId?: string;
 }
 
 export interface BookingDraft {

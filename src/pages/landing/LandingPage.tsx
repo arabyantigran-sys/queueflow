@@ -346,6 +346,9 @@ export function LandingPage() {
           <Link to="/login">{t('landing.footerLogin')}</Link>
           <Link to="/register">{t('landing.footerConnect')}</Link>
           <Link to="/book/beauty-house">{t('landing.footerDemo')}</Link>
+          <Link to="/platform/login" style={{ opacity: 0.7 }}>
+            Platform
+          </Link>
         </div>
       </footer>
     </div>

@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AdminLayout } from './components/layout/AdminLayout';
+import { PlatformLayout } from './components/layout/PlatformLayout';
 import { LandingPage } from './pages/landing/LandingPage';
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
@@ -17,6 +18,12 @@ import { NotificationsPage } from './pages/admin/NotificationsPage';
 import { QRPage } from './pages/admin/QRPage';
 import { BillingPage } from './pages/admin/BillingPage';
 import { SettingsPage } from './pages/admin/SettingsPage';
+import { PlatformLoginPage } from './pages/platform/PlatformLoginPage';
+import { PlatformDashboardPage } from './pages/platform/PlatformDashboardPage';
+import { PlatformRequestsPage } from './pages/platform/PlatformRequestsPage';
+import { PlatformRequestDetailPage } from './pages/platform/PlatformRequestDetailPage';
+import { PlatformSalonsPage } from './pages/platform/PlatformSalonsPage';
+import { PlatformSalonDetailPage } from './pages/platform/PlatformSalonDetailPage';
 
 export default function App() {
   const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || undefined;
@@ -29,6 +36,16 @@ export default function App() {
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route path="/book/:slug" element={<BookingPage />} />
+
+        <Route path="/platform/login" element={<PlatformLoginPage />} />
+        <Route path="/platform" element={<PlatformLayout />}>
+          <Route index element={<PlatformDashboardPage />} />
+          <Route path="requests" element={<PlatformRequestsPage />} />
+          <Route path="requests/:id" element={<PlatformRequestDetailPage />} />
+          <Route path="salons" element={<PlatformSalonsPage />} />
+          <Route path="salons/:id" element={<PlatformSalonDetailPage />} />
+        </Route>
+
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<DashboardPage />} />
           <Route path="calendar" element={<CalendarPage />} />

@@ -10,12 +10,20 @@ export function RegisterPage() {
   const setOnboarding = useAppStore((s) => s.setOnboarding);
   const { t } = useI18n();
   const [name, setName] = useState('');
+  const [ownerName, setOwnerName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const onSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setOnboarding({ step: 1, businessName: name });
+    setOnboarding({
+      step: 1,
+      businessName: name,
+      ownerName: ownerName || name,
+      ownerEmail: email,
+      ownerPhone: phone,
+    });
     navigate('/onboarding');
   };
 
@@ -51,8 +59,28 @@ export function RegisterPage() {
             />
           </div>
           <div className="form-group">
+            <label className="form-label">{t('auth.ownerName')}</label>
+            <input
+              className="form-input"
+              value={ownerName}
+              onChange={(e) => setOwnerName(e.target.value)}
+              placeholder={t('auth.ownerNamePh')}
+              required
+            />
+          </div>
+          <div className="form-group">
             <label className="form-label">{t('auth.email')}</label>
             <input className="form-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </div>
+          <div className="form-group">
+            <label className="form-label">{t('common.phone')}</label>
+            <input
+              className="form-input"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="091 123 456"
+              required
+            />
           </div>
           <div className="form-group">
             <label className="form-label">{t('auth.password')}</label>

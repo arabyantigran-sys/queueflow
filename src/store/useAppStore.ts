@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { api } from '../data/api';
+import { platformApi } from '../data/platformApi';
 import {
   demoAnalytics,
   demoBusiness,
@@ -72,8 +73,8 @@ interface AppState {
   updateNotification: (id: string, patch: Partial<NotificationSetting>) => void;
 
   setOnboarding: (patch: Partial<OnboardingState>) => void;
-  /** Creates a brand-new salon from onboarding (not Beauty House). */
-  finishOnboarding: () => Promise<Business>;
+  /** Submits a salon application to platform admin (pending approval). */
+  finishOnboarding: () => Promise<{ requestId: string }>;
 
   setBookingDraft: (patch: Partial<BookingDraft>) => void;
   resetBookingDraft: () => void;
@@ -95,6 +96,11 @@ const emptyOnboarding: OnboardingState = {
   step: 1,
   businessName: '',
   businessType: '',
+  ownerName: '',
+  ownerEmail: '',
+  ownerPhone: '',
+  city: 'Երևան',
+  planRequested: 'business',
   employees: [],
   services: [],
   workingHours: defaultWorkingHours,
@@ -309,29 +315,29 @@ export const useAppStore = create<AppState>((set, get) => ({
   finishOnboarding: async () => {
     const ob = get().onboarding;
     const name = ob.businessName.trim() || 'Նոր սրահ';
-    const { business, employees, services } = await api.createBusiness({
-      name,
+    const req = await platformApi.createRequest({
+      businessName: name,
+      ownerName: ob.ownerName.trim() || name,
+      ownerEmail: ob.ownerEmail.trim() || 'owner@example.com',
+      ownerPhone: ob.ownerPhone.trim() || '',
+      city: ob.city.trim() || 'Երևան',
       type: (ob.businessType || 'beauty_salon') as BusinessType,
-      workingHours: ob.workingHours,
+      planRequested: ob.planRequested || 'business',
       employees: ob.employees.length
         ? ob.employees
         : [{ name: 'Մասնագետ 1', role: 'Մասնագետ' }],
       services: ob.services.length
         ? ob.services
         : [{ name: 'Ծառայություն', price: 8000, duration: 45 }],
+      workingHours: ob.workingHours,
     });
 
     set({
-      business,
-      employees,
-      services,
-      customers: [],
-      appointments: [],
-      isAuthenticated: true,
-      onboarding: { ...emptyOnboarding, step: 7 },
+      isAuthenticated: false,
+      onboarding: { ...emptyOnboarding, step: 7, submittedRequestId: req.id, businessName: name },
     });
-    get().showToast(`${business.name} սրահը ստեղծված է`);
-    return business;
+    get().showToast('Հայտը ուղարկված է');
+    return { requestId: req.id };
   },
 
   setBookingDraft: (patch) =>

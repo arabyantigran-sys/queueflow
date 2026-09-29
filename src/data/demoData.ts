@@ -38,6 +38,10 @@ export const demoBusiness: Business = {
   workingHours: defaultWorkingHours,
   cancellationPolicy: 'Չեղարկումը պետք է կատարվի այցից առնվազն 2 ժամ առաջ։',
   bookingRules: 'Ամրագրումը հաստատվում է ավտոմատ։ Ուշացման դեպքում սպասեք մինչև 10 րոպե։',
+  status: 'active',
+  ownerEmail: 'admin@beautyhouse.am',
+  ownerPhone: '091 555 010',
+  createdAt: '2026-04-01',
 };
 
 export const demoEmployees: Employee[] = [

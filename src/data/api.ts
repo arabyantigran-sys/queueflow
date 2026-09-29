@@ -22,9 +22,10 @@ import {
   defaultWorkingHours,
   TODAY,
 } from './demoData';
+import { seedPlatformSalons } from './platformData';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
-const STORAGE_KEY = 'queueflow_db_v1';
+const STORAGE_KEY = 'queueflow_db_v2';
 const ACTIVE_KEY = 'queueflow_active_business_id';
 
 const delay = (ms = 40) => new Promise((r) => setTimeout(r, ms));
@@ -50,7 +51,7 @@ type DbShape = {
 
 function defaultDb(): DbShape {
   return {
-    businesses: [structuredClone(demoBusiness)],
+    businesses: [structuredClone(demoBusiness), ...structuredClone(seedPlatformSalons)],
     employees: structuredClone(demoEmployees),
     services: structuredClone(demoServices),
     customers: structuredClone(demoCustomers),
@@ -103,6 +104,11 @@ function mapBusiness(row: Record<string, unknown>): Business {
     workingHours: (row.working_hours as WorkingHours) ?? defaultWorkingHours,
     cancellationPolicy: String(row.cancellation_policy ?? ''),
     bookingRules: String(row.booking_rules ?? ''),
+    status: (row.status as Business['status']) ?? undefined,
+    ownerEmail: row.owner_email != null ? String(row.owner_email) : undefined,
+    ownerPhone: row.owner_phone != null ? String(row.owner_phone) : undefined,
+    createdAt: row.created_at != null ? String(row.created_at).slice(0, 10) : undefined,
+    trialEndsAt: row.trial_ends_at != null ? String(row.trial_ends_at) : undefined,
   };
 }
 
@@ -298,6 +304,12 @@ const sbApi = {
       row.slug = patch.slug;
       row.booking_link = `/book/${patch.slug}`;
     }
+    if (patch.status != null) row.status = patch.status;
+    if (patch.ownerEmail != null) row.owner_email = patch.ownerEmail;
+    if (patch.ownerPhone != null) row.owner_phone = patch.ownerPhone;
+    if (patch.createdAt != null) row.created_at = patch.createdAt;
+    if (patch.trialEndsAt != null) row.trial_ends_at = patch.trialEndsAt;
+    if (patch.nextBillingDate != null) row.next_billing_date = patch.nextBillingDate;
 
     const { data, error } = await requireSb()
       .from('businesses')
@@ -307,6 +319,38 @@ const sbApi = {
       .single();
     if (error) throw error;
     return mapBusiness(data);
+  },
+
+  async ensureBusinesses(list: Business[]): Promise<void> {
+    const sb = requireSb();
+    const existing = await this.listBusinesses();
+    const ids = new Set(existing.map((b) => b.id));
+    const missing = list.filter((b) => !ids.has(b.id));
+    for (const b of missing) {
+      const row = {
+        id: b.id,
+        name: b.name,
+        slug: b.slug,
+        type: b.type,
+        address: b.address,
+        phone: b.phone,
+        city: b.city,
+        rating: b.rating,
+        review_count: b.reviewCount,
+        open_until: b.openUntil,
+        booking_link: b.bookingLink,
+        plan: b.plan,
+        next_billing_date: b.nextBillingDate,
+        working_hours: b.workingHours,
+        cancellation_policy: b.cancellationPolicy,
+        booking_rules: b.bookingRules,
+        status: b.status ?? 'active',
+        owner_email: b.ownerEmail ?? '',
+        owner_phone: b.ownerPhone ?? '',
+        trial_ends_at: b.trialEndsAt ?? null,
+      };
+      await sb.from('businesses').upsert(row);
+    }
   },
 
   async getEmployees(businessId: string): Promise<Employee[]> {
@@ -633,9 +677,26 @@ const localApi = {
   },
   async updateBusiness(id: string, patch: Partial<Business>) {
     await delay();
-    businesses = businesses.map((b) => (b.id === id ? { ...b, ...patch, bookingLink: `/book/${patch.slug ?? b.slug}` } : b));
+    businesses = businesses.map((b) =>
+      b.id === id
+        ? {
+            ...b,
+            ...patch,
+            bookingLink: `/book/${patch.slug ?? b.slug}`,
+          }
+        : b
+    );
     persistLocal();
     return businesses.find((b) => b.id === id)!;
+  },
+  async ensureBusinesses(list: Business[]) {
+    await delay();
+    const ids = new Set(businesses.map((b) => b.id));
+    const missing = list.filter((b) => !ids.has(b.id));
+    if (missing.length) {
+      businesses = [...businesses, ...structuredClone(missing)];
+      persistLocal();
+    }
   },
   async getEmployees(businessId: string) {
     await delay();
