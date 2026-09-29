@@ -8,7 +8,6 @@ import {
   Clock,
   Building2,
   Check,
-  Smartphone,
   Phone,
   Globe,
   UserPlus,
@@ -69,6 +68,9 @@ export function LandingPage() {
           </span>
         </Link>
         <div className="landing-nav-links">
+          <span className="nav-link hide-sm" style={{ color: 'var(--primary)', fontWeight: 700, cursor: 'default' }}>
+            Սրահների համար
+          </span>
           <a href="#how" className="nav-link hide-sm">
             Ինչպես է աշխատում
           </a>
@@ -79,15 +81,15 @@ export function LandingPage() {
             Գներ
           </a>
           <Link to="/book/beauty-house" className="nav-link hide-sm">
-            Դեմո ամրագրում
+            Հաճախորդի էջ (դեմո)
           </Link>
           <Link to="/login">
             <Button variant="ghost" size="sm">
-              Մուտք
+              Սրահի մուտք
             </Button>
           </Link>
           <Link to="/register">
-            <Button size="sm">Փորձել անվճար</Button>
+            <Button size="sm">Միացնել սրահը</Button>
           </Link>
         </div>
       </nav>
@@ -95,7 +97,7 @@ export function LandingPage() {
       <section className="hero">
         <div>
           <div className="hero-eyebrow">
-            <Smartphone size={14} /> One place for every appointment
+            <Building2 size={14} /> Սրահների և սերվիս բիզնեսների համար
           </div>
           <h1>Բոլոր հաճախորդները՝ մեկ հերթում</h1>
           <p className="hero-sub">
@@ -104,7 +106,7 @@ export function LandingPage() {
           </p>
           <div className="hero-ctas">
             <Link to="/register">
-              <Button size="lg">Փորձել անվճար</Button>
+              <Button size="lg">Միացնել իմ սրահը</Button>
             </Link>
             <a href="#how">
               <Button variant="secondary" size="lg">
@@ -112,7 +114,7 @@ export function LandingPage() {
               </Button>
             </a>
           </div>
-          <p className="hero-note">30 օր անվճար փորձաշրջան · Առանց քարտի</p>
+          <p className="hero-note">30 օր անվճար փորձաշրջան սրահների համար · Առանց քարտի</p>
         </div>
 
         <div className="hero-preview" aria-hidden>
@@ -264,13 +266,26 @@ export function LandingPage() {
       <section className="section section-muted" id="experience">
         <div className="cx-layout">
           <div>
-            <h2 style={{ fontSize: '2rem', fontWeight: 750, marginBottom: 12 }}>Հաճախորդի փորձառություն</h2>
+            <div
+              style={{
+                display: 'inline-block',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                color: 'var(--primary)',
+                marginBottom: 8,
+                textTransform: 'uppercase',
+                letterSpacing: '0.04em',
+              }}
+            >
+              Հաճախորդի էջ · դեմո
+            </div>
+            <h2 style={{ fontSize: '2rem', fontWeight: 750, marginBottom: 12 }}>Ինչ է տեսնում հաճախորդը</h2>
             <p style={{ color: 'var(--text-secondary)', marginBottom: 20, fontSize: '1.05rem' }}>
-              Գեղեցիկ, արագ ամրագրման էջ՝ օպտիմիզացված բջջայինի համար։ Հաճախորդը ընտրում է ծառայություն,
-              մասնագետ և ժամ, դուք ստանում եք ամրագրումը անմիջապես dashboard-ում։
+              Հաճախորդը չի տեսնում գներ կամ բաժանորդագրություն։ Նա ստանում է միայն սրահի ամրագրման էջը՝
+              ծառայություն, մասնագետ, ժամ։
             </p>
             <Link to="/book/beauty-house">
-              <Button>Բացել դեմո ամրագրումը</Button>
+              <Button>Բացել հաճախորդի դեմո էջը</Button>
             </Link>
           </div>
           <div className="phone-frame">
@@ -327,8 +342,8 @@ export function LandingPage() {
 
       <section className="section" id="pricing">
         <div className="section-head">
-          <h2>Պարզ և թափանցիկ գներ</h2>
-          <p>30 օր անվճար փորձաշրջան բոլոր փաթեթների համար</p>
+          <h2>Գներ սրահների համար</h2>
+          <p>Հաճախորդները սա չեն տեսնում։ Սա միայն բիզնեսի բաժանորդագրությունն է։</p>
         </div>
         <div className="pricing-grid">
           {plans.map((plan) => (
@@ -360,13 +375,12 @@ export function LandingPage() {
       <footer className="landing-footer">
         <div>
           <span className="brand">QueueFlow</span>
-          <div style={{ marginTop: 4 }}>One place for every appointment.</div>
+          <div style={{ marginTop: 4 }}>Գործիք սրահների համար · One place for every appointment.</div>
         </div>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <Link to="/login">Մուտք</Link>
-          <Link to="/register">Գրանցում</Link>
-          <Link to="/book/beauty-house">Դեմո</Link>
-          <Link to="/admin">Dashboard</Link>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <Link to="/login">Սրահի մուտք</Link>
+          <Link to="/register">Միացնել սրահը</Link>
+          <Link to="/book/beauty-house">Հաճախորդի դեմո էջ</Link>
         </div>
       </footer>
     </div>

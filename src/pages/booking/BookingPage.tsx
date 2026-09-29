@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { ArrowLeft, CalendarPlus, CheckCircle2, MapPin, Star } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { useAppStore } from '../../store/useAppStore';
@@ -11,7 +11,6 @@ type Step = 'services' | 'specialist' | 'datetime' | 'info' | 'done';
 
 export function BookingPage() {
   const { slug } = useParams();
-  const navigate = useNavigate();
   const hydrateBySlug = useAppStore((s) => s.hydrateBySlug);
   const business = useAppStore((s) => s.business);
   const services = useAppStore((s) => s.services);
@@ -112,9 +111,7 @@ export function BookingPage() {
     >
       <div style={{ maxWidth: 440, margin: '0 auto' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <Link to="/" className="brand" style={{ fontSize: '1rem', color: 'var(--primary)' }}>
-            QueueFlow
-          </Link>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Ամրագրում</div>
           {step !== 'services' && step !== 'done' && (
             <button
               className="btn btn-ghost btn-sm"
@@ -363,17 +360,21 @@ export function BookingPage() {
               onClick={async () => {
                 await cancelAppointment(completed.id);
                 showToast('Ամրագրումը չեղարկված է');
-                navigate('/');
+                setStep('services');
+                resetDraft();
               }}
             >
               Չեղարկել ամրագրումը
             </Button>
-            <Link to="/admin" style={{ display: 'block', marginTop: 20, color: 'var(--primary)', fontWeight: 600, fontSize: '0.9rem' }}>
-              Տեսնել բիզնեսի dashboard-ում →
-            </Link>
+            <p style={{ marginTop: 20, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              Powered by QueueFlow
+            </p>
           </div>
         )}
       </div>
+      <p style={{ textAlign: 'center', marginTop: 24, fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+        Powered by QueueFlow
+      </p>
       <Toast />
     </div>
   );
