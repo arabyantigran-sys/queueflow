@@ -31,8 +31,14 @@ jobs:
       - name: SPA fallback
         run: cp dist/index.html dist/404.html
 
+      # Stop Vercel from trying to build this static branch (vite not installed there)
+      - name: Skip Vercel builds on gh-pages
+        run: |
+          printf '%s\n' '{"ignoreCommand":"exit 0"}' > dist/vercel.json
+
       - name: Deploy to gh-pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          force_orphan: true
